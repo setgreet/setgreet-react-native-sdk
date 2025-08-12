@@ -1,0 +1,32 @@
+# Node
+node_modules/
+*.log
+
+# macOS
+.DS_Store
+
+# Xcode
+DerivedData/
+build/
+*.xcworkspace
+Pods/
+
+# Android
+*.iml
+.gradle/
+/local.properties
+/.idea
+/android/app/build/
+
+# Misc
+coverage/
+lib/
+dist/
+
+# NPM
+package-lock.json
+/example/android/app/.cxx
+/example/vendor
+/example/android/.idea
+example/android/local.properties
+example/ios/.xcode.env.local

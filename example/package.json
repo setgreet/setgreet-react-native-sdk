@@ -1,0 +1,41 @@
+{
+  "name": "react-native-setgreet-example",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios --scheme ReactNativeSetgreetExample",
+    "start": "react-native start",
+    "build:android": "react-native build-android --extra-params \"--no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a\"",
+    "build:ios": "react-native build-ios --mode Debug"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-native": "^0.76.6",
+    "react-native-toast-message": "^2.3.3",
+    "react-native-setgreet": "file:.."
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/plugin-transform-flow-strip-types": "^7.25.9",
+    "@babel/preset-env": "^7.26.0",
+    "@babel/runtime": "^7.28.2",
+    "@react-native/babel-preset": "^0.76.6",
+    "@react-native/eslint-config": "^0.76.6",
+    "@react-native/metro-config": "^0.76.6",
+    "@tsconfig/react-native": "^3.0.5",
+    "@types/react": "^18.3.12",
+    "@types/react-native": "^0.72.8",
+    "@types/react-test-renderer": "^18.3.0",
+    "babel-jest": "^29.7.0",
+    "eslint": "^9.15.0",
+    "jest": "^29.7.0",
+    "metro-react-native-babel-preset": "^0.77.0",
+    "prettier": "^3.3.3",
+    "react-test-renderer": "18.3.1",
+    "typescript": "5.6.3"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

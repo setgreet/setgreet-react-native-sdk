@@ -1,0 +1,14 @@
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    google()
+    mavenCentral()
+    maven { url = uri("https://jitpack.io") }
+    includeBuild("../../node_modules/@react-native/gradle-plugin")
+  }
+}
+plugins { id("com.facebook.react.settings") }
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+rootProject.name = 'com.setgreet.reactnative.example'
+include ':app'
+ includeBuild('../../node_modules/@react-native/gradle-plugin')
