@@ -1,0 +1,227 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.1.2 effective-5.10 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)
+// swift-module-flags: -target arm64-apple-ios15.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name SetgreetSDK
+// swift-module-flags-ignorable:  -interface-compiler-version 6.1.2
+import CoreGraphics
+import CoreText
+import DeveloperToolsSupport
+import Foundation
+@_exported import SetgreetSDK
+import Swift
+import SwiftUI
+import UIKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+import os.log
+import os
+
+public protocol SetgreetNetworkInterface {
+  func request<R>(for endpoint: any SetgreetSDK.Endpoint, completion: @escaping (Swift.Result<R, SetgreetSDK.NetworkDomainError>) -> Swift.Void) where R : Swift.Decodable, R : Swift.Encodable
+  func request<R>(for endpoint: any SetgreetSDK.Endpoint) async throws -> R? where R : Swift.Decodable, R : Swift.Encodable
+}
+
+public enum NetworkDomainError : Swift.Error {
+  case statusCode(_: Swift.Int? = nil)
+  case decodingError
+  case taskError
+  case urlRequestCreationFailed
+  case unknown
+}
+public class SetgreetNetwork : SetgreetSDK.SetgreetNetworkInterface {
+  public init()
+  public func request<R>(for endpoint: any SetgreetSDK.Endpoint, completion: @escaping (Swift.Result<R, SetgreetSDK.NetworkDomainError>) -> Swift.Void) where R : Swift.Decodable, R : Swift.Encodable
+  public func request<R>(for endpoint: any SetgreetSDK.Endpoint) async throws -> R? where R : Swift.Decodable, R : Swift.Encodable
+  @objc deinit
+}
+public protocol HTTPBodyEncoder {
+  func encode<D>(for data: D) -> Foundation.Data? where D : Swift.Decodable, D : Swift.Encodable
+}
+public struct HTTPBodyEncoderImpl : SetgreetSDK.HTTPBodyEncoder {
+  public init()
+  public func encode<D>(for data: D) -> Foundation.Data? where D : Swift.Decodable, D : Swift.Encodable
+}
+public enum HTTPMethod : Swift.String {
+  case GET
+  case POST
+  case PUT
+  case DELETE
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+extension Foundation.Data {
+  public var prettyPrintedJSONString: Foundation.NSString? {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers public class Setgreet {
+  public static let shared: SetgreetSDK.Setgreet
+  public func initialize(appKey: Swift.String, config: SetgreetSDK.SetgreetConfig)
+  public func identifyUser(userId: Swift.String, attributes: [Swift.String : Any]? = nil, operation: SetgreetSDK.Operation = .create)
+  public func identifyUser(userId: Swift.String, attributes: [Swift.String : Any]? = nil)
+  public func showFlow(flowId: Swift.String)
+  public func trackEvent(eventName: Swift.String, properties: [Swift.String : Any]? = nil)
+  public func trackScreen(screenName: Swift.String, properties: [Swift.String : Any]? = nil)
+  public func resetUser()
+  @objc deinit
+}
+public struct SetgreetConfig {
+  public let debugMode: Swift.Bool
+  public init(debugMode: Swift.Bool)
+}
+
+public enum TemplateType : Swift.String {
+  case TEMPLATE_1
+  case TEMPLATE_2
+  case TEMPLATE_3
+  case TEMPLATE_4
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct SetgreetFlowModel : Swift.Codable {
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public protocol Endpoint {
+  var base: Swift.String { get }
+  var path: Swift.String { get }
+  var apiVersion: Swift.String { get }
+  var parameters: [Swift.String : Any]? { get }
+  var type: SetgreetSDK.HTTPMethod { get }
+  var headers: [Swift.String : Swift.String] { get }
+  var mimeType: Swift.String? { get }
+  var queryItems: [Foundation.URLQueryItem]? { get }
+  var apiKey: Swift.String { get }
+  var httpBody: Foundation.Data? { get }
+  var appKey: Swift.String { get }
+}
+extension SetgreetSDK.Endpoint {
+  public var scheme: Swift.String {
+    get
+  }
+  public var httpBody: Foundation.Data? {
+    get
+  }
+  public var mimeType: Swift.String? {
+    get
+  }
+  public var apiKey: Swift.String {
+    get
+  }
+  public var parameters: [Swift.String : Any]? {
+    get
+  }
+  public var base: Swift.String {
+    get
+  }
+  public var apiVersion: Swift.String {
+    get
+  }
+  public var urlComponents: Foundation.URLComponents {
+    get
+  }
+}
+public enum EventType : Swift.String, Swift.CaseIterable {
+  case flowStarted
+  case flowCompleted
+  case flowDismissed
+  case flowError
+  case screen
+  case screenEnter
+  case screenExit
+  case buttonClick
+  case inputFocus
+  case inputBlur
+  case scroll
+  case swipe
+  case mediaPlay
+  case mediaPause
+  case mediaComplete
+  case mediaError
+  case nextPage
+  case previousPage
+  case skipPage
+  case formSubmit
+  case formValidation
+  case fieldChange
+  case sdkInit
+  case userIdentified
+  case configChanged
+  case networkError
+  public var eventName: Swift.String {
+    get
+  }
+  public static func fromEventName(_ eventName: Swift.String) -> SetgreetSDK.EventType?
+  public init?(rawValue: Swift.String)
+  public typealias AllCases = [SetgreetSDK.EventType]
+  public typealias RawValue = Swift.String
+  nonisolated public static var allCases: [SetgreetSDK.EventType] {
+    get
+  }
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum EventPropertyKey : Swift.String, Swift.CaseIterable {
+  case screenName
+  case buttonId
+  case flowId
+  case appVersion
+  case sdkVersion
+  case errorMessage
+  case userId
+  public var key: Swift.String {
+    get
+  }
+  public static func fromKey(_ key: Swift.String) -> SetgreetSDK.EventPropertyKey?
+  public init?(rawValue: Swift.String)
+  public typealias AllCases = [SetgreetSDK.EventPropertyKey]
+  public typealias RawValue = Swift.String
+  nonisolated public static var allCases: [SetgreetSDK.EventPropertyKey] {
+    get
+  }
+  public var rawValue: Swift.String {
+    get
+  }
+}
+
+@_hasMissingDesignatedInitializers public class DynamicFontLoader {
+  public static func loadFont(from urlString: Swift.String, fontName: Swift.String, completion: @escaping (Swift.Bool) -> Swift.Void)
+  @objc deinit
+}
+public var setgreetVersion: Swift.String
+
+public enum Operation : Swift.String, Swift.Codable {
+  case create
+  case update
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers final public class FontLoader {
+  public static func loadFontsFromDirectory()
+  @objc deinit
+}
+extension SetgreetSDK.HTTPMethod : Swift.Equatable {}
+extension SetgreetSDK.HTTPMethod : Swift.Hashable {}
+extension SetgreetSDK.HTTPMethod : Swift.RawRepresentable {}
+extension SetgreetSDK.TemplateType : Swift.Equatable {}
+extension SetgreetSDK.TemplateType : Swift.Hashable {}
+extension SetgreetSDK.TemplateType : Swift.RawRepresentable {}
+extension SetgreetSDK.EventType : Swift.Equatable {}
+extension SetgreetSDK.EventType : Swift.Hashable {}
+extension SetgreetSDK.EventType : Swift.RawRepresentable {}
+extension SetgreetSDK.EventPropertyKey : Swift.Equatable {}
+extension SetgreetSDK.EventPropertyKey : Swift.Hashable {}
+extension SetgreetSDK.EventPropertyKey : Swift.RawRepresentable {}
+extension SetgreetSDK.Operation : Swift.Equatable {}
+extension SetgreetSDK.Operation : Swift.Hashable {}
+extension SetgreetSDK.Operation : Swift.RawRepresentable {}

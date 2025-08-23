@@ -15,9 +15,11 @@ Pod::Spec.new do |s|
 
   s.source_files = "ios/**/*.{swift,m,h}"
   
-
   s.swift_version = '5.0'
   s.ios.frameworks = 'UIKit'
+
+  # Automatically include SetgreetSDK framework
+  s.vendored_frameworks = "ios/Frameworks/SetgreetSDK.xcframework"
 
   install_modules_dependencies(s)
 end

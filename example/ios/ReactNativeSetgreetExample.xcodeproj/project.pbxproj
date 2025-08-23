@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		26C6F25759CEA6C793CE4A44 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9062DD492E567C4100C00116 /* PrivacyInfo.xcprivacy */; };
 		2936187F61ED846D7266E04E /* libPods-ReactNativeSetgreetExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8ACB661295ABDB55AF96EC26 /* libPods-ReactNativeSetgreetExample.a */; };
-		902165752E59553A00DE81DA /* SetgreetSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 902165742E59553A00DE81DA /* SetgreetSDK */; };
 		9062DD4A2E567C4100C00117 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9062DD452E567C4100C00116 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -33,7 +32,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				902165752E59553A00DE81DA /* SetgreetSDK in Frameworks */,
 				2936187F61ED846D7266E04E /* libPods-ReactNativeSetgreetExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,9 +146,6 @@
 				Base,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
-			packageReferences = (
-				902165712E59552900DE81DA /* XCRemoteSwiftPackageReference "setgreet-ios-sdk" */,
-			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -196,13 +191,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -239,13 +230,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -389,7 +376,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -458,7 +448,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -488,25 +481,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		902165712E59552900DE81DA /* XCRemoteSwiftPackageReference "setgreet-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/setgreet/setgreet-ios-sdk";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.3.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		902165742E59553A00DE81DA /* SetgreetSDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 902165712E59552900DE81DA /* XCRemoteSwiftPackageReference "setgreet-ios-sdk" */;
-			productName = SetgreetSDK;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }
