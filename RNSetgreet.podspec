@@ -18,8 +18,9 @@ Pod::Spec.new do |s|
   s.swift_version = '5.0'
   s.ios.frameworks = 'UIKit'
 
-  # Automatically include SetgreetSDK framework
-  s.vendored_frameworks = "ios/Frameworks/SetgreetSDK.xcframework"
-
+  # SetgreetSDK should be added via Swift Package Manager
+  # Add this to your iOS project: https://github.com/setgreet/setgreet-ios-sdk
+  # This podspec assumes SetgreetSDK is available in the project
+  
   install_modules_dependencies(s)
 end
