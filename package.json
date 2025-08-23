@@ -1,7 +1,7 @@
 {
-  "name": "react-native-setgreet",
+  "name": "@setgreet/react-native-sdk",
   "version": "0.1.0",
-  "description": "Setgreet React Native SDK",
+  "description": "Official React Native SDK for Setgreet",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
@@ -38,25 +38,43 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
-    "release": "release-it --only-version"
+    "release": "release-it --only-version",
+    "publish:patch": "./scripts/publish.sh --patch",
+    "publish:minor": "./scripts/publish.sh --minor",
+    "publish:major": "./scripts/publish.sh --major",
+    "publish:custom": "./scripts/publish.sh",
+    "publish:preview": "./scripts/publish.sh --preview"
   },
   "keywords": [
+    "setgreet",
     "react-native",
     "ios",
-    "android"
+    "android",
+    "mobile",
+    "app",
+    "user",
+    "onboarding",
+    "sdk",
+    "no-code",
+    "user engagement",
+    "user experience",
+    "user retention",
+    "mobile app growth",
+    "mobile app monetization"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/setgreet/setgreet-react-native-sdk.git"
   },
-  "author": "setgreet <hello@setgreet.com> (https://github.com/setgreet)",
+  "author": "Setgreet <hello@setgreet.com> (https://github.com/setgreet)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/setgreet/setgreet-react-native-sdk/issues"
   },
-  "homepage": "https://github.com/setgreet/setgreet-react-native-sdk#readme",
+  "homepage": "https://setgreet.com",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.6.0",
@@ -69,8 +87,13 @@
     "@react-native/eslint-config": "^0.78.0",
     "@react-native/gradle-plugin": "^0.79.2",
     "@release-it/conventional-changelog": "^9.0.2",
+    "@types/babel__generator": "^7.27.0",
+    "@types/babel__template": "^7.4.4",
+    "@types/istanbul-lib-report": "^3.0.3",
     "@types/jest": "^29.5.5",
+    "@types/node": "^24.3.0",
     "@types/react": "^19.0.0",
+    "@types/yargs-parser": "^21.0.3",
     "commitlint": "^19.6.1",
     "del-cli": "^5.1.0",
     "eslint": "^9.22.0",
