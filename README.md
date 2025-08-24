@@ -22,36 +22,12 @@ yarn add @setgreet/react-native-sdk
 
 ### 2. iOS Setup
 
-#### Step 2a: Add SetgreetSDK via Swift Package Manager
+#### Install CocoaPods Dependencies
 
-The iOS SetgreetSDK must be added to your project via Swift Package Manager:
-
-1. **Open your iOS project in Xcode:**
-
-   ```bash
-   open ios/YourApp.xcworkspace
-   ```
-
-2. **In Xcode, add the Swift package:**
-   - Go to `File` → `Add Package Dependencies...`
-   - Enter the repository URL: `https://github.com/setgreet/setgreet-ios-sdk`
-   - Click `Add Package`
-   - Select your app target and click `Add Package`
-
-3. **Install CocoaPods dependencies:**
-   ```bash
-   cd ios && pod install
-   ```
-
-#### Step 2b: Automated Setup (Alternative)
-
-You can use our setup script to guide you through the process:
+The iOS SetgreetSDK is automatically included via CocoaPods when you install the React Native SDK:
 
 ```bash
-# Run the iOS setup helper
-npm run setup:ios
-# or directly:
-./scripts/setup-ios.sh
+cd ios && pod install
 ```
 
 ### 3. Android Setup
@@ -168,26 +144,26 @@ trackEvent('purchase_completed', {
 
 #### "SetgreetSDK module not found"
 
-1. Ensure you've added SetgreetSDK via Swift Package Manager in Xcode
+1. Ensure you've installed CocoaPods dependencies: `cd ios && pod install`
 2. Clean your project: `cd ios && xcodebuild clean`
 3. Reinstall pods: `cd ios && pod install`
 4. Rebuild your project
 
 #### "Duplicate symbol" errors
 
-This usually means you have both the old embedded framework and the new SPM dependency. Make sure you've:
+This usually means you have both the old embedded framework and the new CocoaPods dependency. Make sure you've:
 
 1. Updated to the latest version of this package
 2. Removed any manual SetgreetSDK framework references
-3. Only use SPM for SetgreetSDK dependency
+3. Only use CocoaPods for SetgreetSDK dependency
 
-#### SPM Package Not Found
+#### CocoaPods Installation Issues
 
-Ensure you're using the correct repository URL:
+If you encounter CocoaPods issues:
 
-```
-https://github.com/setgreet/setgreet-ios-sdk
-```
+1. Update CocoaPods: `sudo gem install cocoapods`
+2. Clean CocoaPods cache: `pod cache clean --all`
+3. Reinstall: `cd ios && pod install`
 
 ### Android Issues
 
@@ -197,12 +173,6 @@ Android integration should work automatically. If you encounter issues:
 2. Rebuild: `cd android && ./gradlew assembleDebug`
 
 ### General Issues
-
-For setup help, run:
-
-```bash
-npm run setup:ios
-```
 
 If you continue to have issues, please [open an issue](https://github.com/setgreet/setgreet-react-native-sdk/issues) with:
 

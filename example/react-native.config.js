@@ -1,6 +1,6 @@
 module.exports = {
   dependencies: {
-    'react-native-setgreet': {
+    '@setgreet/react-native-sdk': {
       platforms: {
         android: {
           sourceDir: '../../android',

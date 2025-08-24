@@ -11,7 +11,7 @@ const config = {
   watchFolders: [path.resolve(__dirname, '..')],
   resolver: {
     alias: {
-      'react-native-setgreet': path.resolve(__dirname, '..'),
+      '@setgreet/react-native-sdk': path.resolve(__dirname, '..'),
     },
   },
 };

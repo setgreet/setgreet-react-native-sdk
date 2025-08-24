@@ -12,7 +12,7 @@ import {
   identifyUser,
   trackEvent,
   showFlow,
-} from 'react-native-setgreet';
+} from '@setgreet/react-native-sdk';
 import { SETGREET_CONFIG, validateConfig } from './config';
 
 export default function App() {

@@ -20,9 +20,7 @@
     "cpp",
     "*.podspec",
     "react-native.config.js",
-    "scripts/setup-ios.sh",
     "!ios/build",
-    "!ios/Frameworks",
     "!android/build",
     "!android/gradle",
     "!android/gradlew",
@@ -45,8 +43,7 @@
     "publish:minor": "./scripts/publish.sh --minor",
     "publish:major": "./scripts/publish.sh --major",
     "publish:custom": "./scripts/publish.sh",
-    "publish:preview": "./scripts/publish.sh --preview",
-    "setup:ios": "./scripts/setup-ios.sh"
+    "publish:preview": "./scripts/publish.sh --preview"
   },
   "keywords": [
     "setgreet",

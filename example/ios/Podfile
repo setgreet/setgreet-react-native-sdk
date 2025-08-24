@@ -1,4 +1,3 @@
-# SetgreetSDK is linked as a Swift Package in Xcode
 source 'https://cdn.cocoapods.org/'
 
 # Enable new architecture by default, but can be overridden
@@ -26,10 +25,11 @@ end
 target 'ReactNativeSetgreetExample' do
   config = use_native_modules!
   
-
+  # Add SetgreetSDK dependency directly
+  pod 'SetgreetSDK', :git => 'https://github.com/setgreet/setgreet-ios-sdk.git', :tag => '0.3.1'
 
   use_react_native!(
-    :path => config[:reactNativePath],
+    :path => "../node_modules/react-native",
     :hermes_enabled => true,
     :fabric_enabled => true,
     # An absolute path to your application root.
@@ -40,7 +40,7 @@ target 'ReactNativeSetgreetExample' do
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,
-      config[:reactNativePath],
+      "../node_modules/react-native",
       :mac_catalyst_enabled => false
     )
   end

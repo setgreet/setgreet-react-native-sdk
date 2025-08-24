@@ -10,29 +10,31 @@
     "build:ios": "react-native build-ios --mode Debug"
   },
   "dependencies": {
-    "react": "18.3.1",
-    "react-native": "^0.76.6",
-    "react-native-toast-message": "^2.3.3",
-    "react-native-setgreet": "file:.."
+    "@react-native-community/cli": "^15.0.0-alpha.2",
+    "@react-native/community-cli-plugin": "^0.79.2",
+    "@setgreet/react-native-sdk": "file:..",
+    "react": "19.0.0",
+    "react-native": "^0.79.2",
+    "react-native-toast-message": "^2.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/plugin-transform-flow-strip-types": "^7.25.9",
     "@babel/preset-env": "^7.26.0",
     "@babel/runtime": "^7.28.2",
-    "@react-native/babel-preset": "^0.76.6",
-    "@react-native/eslint-config": "^0.76.6",
-    "@react-native/metro-config": "^0.76.6",
+    "@react-native/babel-preset": "^0.79.2",
+    "@react-native/eslint-config": "^0.78.0",
+    "@react-native/metro-config": "^0.79.2",
     "@tsconfig/react-native": "^3.0.5",
-    "@types/react": "^18.3.12",
+    "@types/react": "^19.0.0",
     "@types/react-native": "^0.72.8",
-    "@types/react-test-renderer": "^18.3.0",
+    "@types/react-test-renderer": "^19.0.0",
     "babel-jest": "^29.7.0",
     "eslint": "^9.15.0",
     "jest": "^29.7.0",
-    "metro-react-native-babel-preset": "^0.77.0",
+    "metro": "^0.82.0",
     "prettier": "^3.3.3",
-    "react-test-renderer": "18.3.1",
+    "react-test-renderer": "19.0.0",
     "typescript": "5.6.3"
   },
   "engines": {
