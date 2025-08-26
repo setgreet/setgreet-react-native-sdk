@@ -19,6 +19,6 @@ Pod::Spec.new do |s|
   s.ios.frameworks = 'UIKit'
 
   # SetgreetSDK dependency - this will be resolved by the main app's Podfile
-  s.dependency 'SetgreetSDK'
+  s.dependency 'SetgreetSDK', '0.3.1'
   s.dependency 'React-Core'
 end
