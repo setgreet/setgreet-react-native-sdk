@@ -152,14 +152,14 @@ commit_and_tag() {
     
     print_status "Committing version changes..."
     git add package.json RNSetgreet.podspec
-    git commit -m "chore: release v$version"
+    git commit -m "Release $version"
     
     print_status "Creating git tag..."
-    git tag "v$version"
+    git tag "$version"
     
     print_status "Pushing changes and tags..."
     git push origin main
-    git push origin "v$version"
+    git push origin "$version"
     
     print_success "Version committed and tagged successfully!"
 }
@@ -339,9 +339,9 @@ main() {
         print_warning "Skipping git operations as requested"
         print_status "Don't forget to commit and tag manually:"
         print_status "  git add package.json RNSetgreet.podspec"
-        print_status "  git commit -m 'chore: release v$new_version'"
-        print_status "  git tag 'v$new_version'"
-        print_status "  git push origin main && git push origin 'v$new_version'"
+        print_status "  git commit -m 'Release $new_version'"
+        print_status "  git tag '$new_version'"
+        print_status "  git push origin main && git push origin '$new_version'"
     fi
     
     echo
