@@ -25,7 +25,7 @@ class RNSetgreetPackage : BaseReactPackage() {
         false,  // canOverrideExistingModule
         false,  // needsEagerInit
         false,  // isCxxModule
-        true // isTurboModule
+        true    // isTurboModule - enable for new architecture
       )
       moduleInfos
     }
