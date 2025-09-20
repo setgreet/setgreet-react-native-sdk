@@ -23,9 +23,16 @@ class RNSetgreet: NSObject, RCTBridgeModule {
     )
   }
   
-  @objc(identifyUser:attributes:)
-  func identifyUser(userId: String, attributes: NSDictionary?) {
-    Setgreet.shared.identifyUser(userId: userId, attributes: attributes as? [String: Any])
+  @objc(identifyUser:attributes:operation:locale:)
+  func identifyUser(userId: String, attributes: NSDictionary?, operation: String?, locale: String?) {
+    let op: Operation = (operation?.lowercased() == "update") ? .update : .create
+
+    Setgreet.shared.identifyUser(
+      userId: userId,
+      attributes: attributes as? [String: Any],
+      operation: op,
+      locale: locale
+    )
   }
   
   @objc(resetUser)

@@ -13,26 +13,64 @@ import {
   trackEvent,
   showFlow,
 } from '@setgreet/react-native-sdk';
-import { SETGREET_CONFIG, validateConfig } from './config';
+
+// Your Setgreet app key
+const APP_KEY = 'YOUR_APP_KEY_HERE';
+
+// Test flow ID - replace with a valid flow ID
+const TEST_FLOW_ID = 'YOUR_FLOW_ID_HERE';
+
+// Debug mode for development
+const DEBUG_MODE = true;
+
+// Test user ID
+const TEST_USER_ID = 'user123';
+
+// Test user attributes
+const TEST_USER_ATTRIBUTES = {
+  plan: 'pro',
+  environment: 'development',
+};
+
+const TEST_USER_LOCALE = 'en-US';
+
+// Validation function
+const validateConfig = (appKey: string, flowId: string) => {
+  if (appKey === 'YOUR_APP_KEY_HERE') {
+    throw new Error(
+      'Please replace YOUR_APP_KEY_HERE with your actual Setgreet app key'
+    );
+  }
+
+  if (flowId === 'YOUR_FLOW_ID_HERE') {
+    throw new Error(
+      'Please replace YOUR_FLOW_ID_HERE with your actual Setgreet flow id'
+    );
+  }
+
+  return true;
+};
 
 export default function App() {
-  const [appKey, setAppKey] = useState(SETGREET_CONFIG.APP_KEY);
-  const [flowId, setFlowId] = useState(SETGREET_CONFIG.TEST_FLOW_ID);
+  const [appKey, setAppKey] = useState(APP_KEY);
+  const [flowId, setFlowId] = useState(TEST_FLOW_ID);
 
   useEffect(() => {
     const run = async () => {
       try {
-        validateConfig();
+        validateConfig(APP_KEY, TEST_FLOW_ID);
 
         // Initialize the SDK with your app key
-        initialize(SETGREET_CONFIG.APP_KEY, {
-          debugMode: SETGREET_CONFIG.DEBUG_MODE,
+        initialize(APP_KEY, {
+          debugMode: DEBUG_MODE,
         });
 
-        // Identify user
+        // Identify user with locale
         identifyUser(
-          SETGREET_CONFIG.TEST_USER_ID,
-          SETGREET_CONFIG.TEST_USER_ATTRIBUTES
+          TEST_USER_ID,
+          TEST_USER_ATTRIBUTES,
+          'create',
+          TEST_USER_LOCALE
         );
 
         // Track initial event
@@ -47,12 +85,14 @@ export default function App() {
   const handleInitialize = () => {
     try {
       initialize(appKey, {
-        debugMode: SETGREET_CONFIG.DEBUG_MODE,
+        debugMode: DEBUG_MODE,
       });
 
       identifyUser(
-        SETGREET_CONFIG.TEST_USER_ID,
-        SETGREET_CONFIG.TEST_USER_ATTRIBUTES
+        TEST_USER_ID,
+        TEST_USER_ATTRIBUTES,
+        'create',
+        TEST_USER_LOCALE
       );
 
       Toast.show({

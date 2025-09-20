@@ -8,7 +8,9 @@ export interface Spec extends TurboModule {
   // User
   identifyUser(
     userId: string,
-    attributes: { [key: string]: unknown } | null
+    attributes: { [key: string]: unknown } | null,
+    operation: string | null,
+    locale: string | null
   ): void;
   resetUser(): void;
 

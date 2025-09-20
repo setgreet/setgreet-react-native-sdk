@@ -7,8 +7,10 @@ export const initialize = (appKey: string, config?: InitConfig) =>
 
 export const identifyUser = (
   userId: string,
-  attributes?: Record<string, unknown>
-) => RNSetgreet.identifyUser(userId, attributes ?? null);
+  attributes?: Record<string, unknown>,
+  operation?: 'create' | 'update',
+  locale?: string
+) => RNSetgreet.identifyUser(userId, attributes ?? null, operation ?? 'create', locale ?? null);
 
 export const resetUser = () => RNSetgreet.resetUser();
 

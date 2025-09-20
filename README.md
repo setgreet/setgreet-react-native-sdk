@@ -58,6 +58,8 @@ Identifies a user for Setgreet analytics and flow management.
 
 - `userId` (String): The unique identifier for the user
 - `attributes` (Optional): Additional user attributes
+- `operation` (Optional): The operation type for user attributes ('create' or 'update', defaults to 'create')
+- `locale` (Optional): User's locale (e.g., "en-US"). If not provided, uses device's default locale
 
 **Example:**
 
@@ -68,7 +70,7 @@ identifyUser('user123', {
   name: 'John Doe',
   email: 'john@example.com',
   plan: 'premium',
-});
+}, 'create', 'en-US');
 ```
 
 ### Reset User

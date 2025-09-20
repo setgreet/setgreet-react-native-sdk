@@ -34,14 +34,19 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
     }
   }
 
-  override fun identifyUser(userId: String, attributes: ReadableMap?) {
+  override fun identifyUser(userId: String, attributes: ReadableMap?, operation: String?, locale: String?) {
     try {
       if (userId.isBlank()) {
         throw IllegalArgumentException("User ID cannot be empty")
       }
-      
+
       val attrs = attributes?.toNonNullAnyMap()
-      Setgreet.identifyUser(userId, attrs)
+      val op = when (operation?.lowercase()) {
+        "update" -> com.setgreet.model.Operation.UPDATE
+        else -> com.setgreet.model.Operation.CREATE
+      }
+
+      Setgreet.identifyUser(userId, attrs, op, locale)
     } catch (e: Exception) {
       throw e
     }
