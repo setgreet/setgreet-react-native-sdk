@@ -10,7 +10,13 @@ export const identifyUser = (
   attributes?: Record<string, unknown>,
   operation?: 'create' | 'update',
   locale?: string
-) => RNSetgreet.identifyUser(userId, attributes ?? null, operation ?? 'create', locale ?? null);
+) =>
+  RNSetgreet.identifyUser(
+    userId,
+    attributes ?? null,
+    operation ?? 'create',
+    locale ?? null
+  );
 
 export const resetUser = () => RNSetgreet.resetUser();
 
