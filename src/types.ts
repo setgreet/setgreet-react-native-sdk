@@ -15,10 +15,23 @@ export type ActionType =
   | 'back'
   | 'close'
   | 'skip'
-  | 'permission'
+  | 'notification_permission'
+  | 'location_permission'
+  | 'camera_permission'
   | 'internalUrl'
   | 'externalUrl'
   | 'none';
+
+// Permission types
+export type PermissionType = 'notification' | 'location' | 'camera';
+
+// Permission result types
+export type PermissionResult =
+  | 'granted'
+  | 'denied'
+  | 'permanently_denied'
+  | 'already_granted'
+  | 'not_required';
 
 // Event interfaces
 export interface FlowStartedEvent {
@@ -72,6 +85,15 @@ export interface FlowErrorEvent {
   timestamp: number;
 }
 
+export interface PermissionRequestedEvent {
+  type: 'permissionRequested';
+  flowId: string;
+  permissionType: PermissionType;
+  result: PermissionResult;
+  screenIndex: number;
+  timestamp: number;
+}
+
 // Union type for all events
 export type SetgreetFlowEvent =
   | FlowStartedEvent
@@ -79,6 +101,7 @@ export type SetgreetFlowEvent =
   | FlowDismissedEvent
   | ScreenChangedEvent
   | ActionTriggeredEvent
+  | PermissionRequestedEvent
   | FlowErrorEvent;
 
 // Subscription handle for cleanup
@@ -93,5 +116,6 @@ export interface FlowEventCallbacks {
   onFlowDismissed?: (event: FlowDismissedEvent) => void;
   onScreenChanged?: (event: ScreenChangedEvent) => void;
   onActionTriggered?: (event: ActionTriggeredEvent) => void;
+  onPermissionRequested?: (event: PermissionRequestedEvent) => void;
   onFlowError?: (event: FlowErrorEvent) => void;
 }

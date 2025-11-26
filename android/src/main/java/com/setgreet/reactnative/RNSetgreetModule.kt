@@ -60,6 +60,9 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
       onActionTriggered { event ->
         sendEvent(createActionTriggeredEvent(event))
       }
+      onPermissionRequested { event ->
+        sendEvent(createPermissionRequestedEvent(event))
+      }
       onError { event ->
         sendEvent(createFlowErrorEvent(event))
       }
@@ -135,6 +138,17 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
       putString("flowId", event.flowId)
       putString("errorType", event.errorType.toJsString())
       putString("message", event.message)
+      putDouble("timestamp", event.timestamp.toDouble())
+    }
+  }
+
+  private fun createPermissionRequestedEvent(event: SetgreetFlowEvent.PermissionRequested): WritableMap {
+    return Arguments.createMap().apply {
+      putString("type", "permissionRequested")
+      putString("flowId", event.flowId)
+      putString("permissionType", event.permissionType)
+      putString("result", event.result)
+      putInt("screenIndex", event.screenIndex)
       putDouble("timestamp", event.timestamp.toDouble())
     }
   }

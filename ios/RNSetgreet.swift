@@ -58,6 +58,9 @@ class RNSetgreet: RCTEventEmitter {
         .onActionTriggered { [weak self] event in
           self?.sendFlowEvent(self?.createActionTriggeredEvent(event))
         }
+        .onPermissionRequested { [weak self] event in
+          self?.sendFlowEvent(self?.createPermissionRequestedEvent(event))
+        }
         .onError { [weak self] event in
           self?.sendFlowEvent(self?.createFlowErrorEvent(event))
         }
@@ -133,6 +136,17 @@ class RNSetgreet: RCTEventEmitter {
       "flowId": event.flowId,
       "errorType": errorTypeToJsString(event.errorType),
       "message": event.message,
+      "timestamp": event.timestamp * 1000
+    ]
+  }
+
+  private func createPermissionRequestedEvent(_ event: PermissionRequestedEvent) -> [String: Any] {
+    return [
+      "type": "permissionRequested",
+      "flowId": event.flowId,
+      "permissionType": event.permissionType,
+      "result": event.result,
+      "screenIndex": event.screenIndex,
       "timestamp": event.timestamp * 1000
     ]
   }

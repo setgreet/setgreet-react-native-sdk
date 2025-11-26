@@ -7,6 +7,7 @@ import type {
   FlowDismissedEvent,
   ScreenChangedEvent,
   ActionTriggeredEvent,
+  PermissionRequestedEvent,
   FlowErrorEvent,
   FlowEventCallbacks,
   FlowEventSubscription,
@@ -131,6 +132,23 @@ export function addActionTriggeredListener(
 }
 
 /**
+ * Subscribe to permission requested events
+ */
+export function addPermissionRequestedListener(
+  callback: (event: PermissionRequestedEvent) => void
+): FlowEventSubscription {
+  const subscription = eventEmitter.addListener(
+    'SetgreetFlowEvent',
+    (event: SetgreetFlowEvent) => {
+      if (event.type === 'permissionRequested') {
+        callback(event);
+      }
+    }
+  );
+  return { remove: () => subscription.remove() };
+}
+
+/**
  * Subscribe to flow error events
  */
 export function addFlowErrorListener(
@@ -185,6 +203,9 @@ export function useFlowEvents(callbacks: FlowEventCallbacks): void {
         break;
       case 'actionTriggered':
         currentCallbacks.onActionTriggered?.(event);
+        break;
+      case 'permissionRequested':
+        currentCallbacks.onPermissionRequested?.(event);
         break;
       case 'flowError':
         currentCallbacks.onFlowError?.(event);

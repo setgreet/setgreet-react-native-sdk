@@ -151,6 +151,7 @@ Listen to flow lifecycle events to track user interactions and flow completion.
 - `onFlowDismissed`: Called when user dismisses the flow before completion
 - `onScreenChanged`: Called when user navigates between screens
 - `onActionTriggered`: Called when user interacts with buttons
+- `onPermissionRequested`: Called when a permission request completes
 - `onFlowError`: Called when an error occurs during flow operations
 
 **Using the useFlowEvents Hook (Recommended):**
@@ -182,6 +183,10 @@ function MyComponent() {
         console.log(`Custom event name: ${event.actionName}`);
       }
     },
+    onPermissionRequested: (event) => {
+      console.log(`Permission: ${event.permissionType}`);
+      console.log(`Result: ${event.result}`);
+    },
     onFlowError: (event) => {
       console.log(`Error: ${event.errorType} - ${event.message}`);
     },
@@ -198,6 +203,7 @@ import {
   addFlowStartedListener,
   addFlowCompletedListener,
   addFlowDismissedListener,
+  addPermissionRequestedListener,
 } from '@setgreet/react-native-sdk';
 
 // Subscribe to specific events
@@ -205,8 +211,14 @@ const subscription = addFlowCompletedListener((event) => {
   console.log(`Flow ${event.flowId} completed in ${event.durationMs}ms`);
 });
 
+// Subscribe to permission events
+const permissionSubscription = addPermissionRequestedListener((event) => {
+  console.log(`Permission ${event.permissionType}: ${event.result}`);
+});
+
 // Clean up when done
 subscription.remove();
+permissionSubscription.remove();
 ```
 
 **Dismiss Reasons:**
@@ -218,6 +230,24 @@ subscription.remove();
 | `backPress` | User pressed the back button (hardware) |
 | `replaced` | Flow was replaced by a higher priority flow |
 | `programmatic` | Flow was dismissed programmatically |
+
+**Permission Types:**
+
+| Type | Description |
+|------|-------------|
+| `notification` | Push notification permission |
+| `location` | Location access permission |
+| `camera` | Camera access permission |
+
+**Permission Results:**
+
+| Result | Description |
+|--------|-------------|
+| `granted` | Permission was granted by the user |
+| `denied` | Permission was denied by the user |
+| `permanently_denied` | Permission was permanently denied (user must enable in settings) |
+| `already_granted` | Permission was already granted before the request |
+| `not_required` | Permission request was not required or not applicable |
 
 ## Troubleshooting
 
@@ -245,6 +275,22 @@ If you encounter CocoaPods issues:
 1. Update CocoaPods: `sudo gem install cocoapods`
 2. Clean CocoaPods cache: `pod cache clean --all`
 3. Reinstall: `cd ios && pod install`
+
+#### Permission Requests Not Working
+
+If your flows use permission buttons (notification, location, camera), you need to add the required keys to your `Info.plist`:
+
+```xml
+<!-- For location permission -->
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Your description for location usage</string>
+
+<!-- For camera permission -->
+<key>NSCameraUsageDescription</key>
+<string>Your description for camera usage</string>
+```
+
+Note: Notification permission doesn't require an Info.plist key.
 
 ### Android Issues
 
