@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {
@@ -12,6 +13,7 @@ import {
   identifyUser,
   trackEvent,
   showFlow,
+  useFlowEvents,
 } from '@setgreet/react-native-sdk';
 
 // Your Setgreet app key
@@ -54,6 +56,40 @@ const validateConfig = (appKey: string, flowId: string) => {
 export default function App() {
   const [appKey, setAppKey] = useState(APP_KEY);
   const [flowId, setFlowId] = useState(TEST_FLOW_ID);
+  const [eventLogs, setEventLogs] = useState<string[]>([]);
+
+  const addLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setEventLogs((prev) => [`[${timestamp}] ${message}`, ...prev]);
+  };
+
+  // Subscribe to flow events using the hook
+  useFlowEvents({
+    onFlowStarted: (event) => {
+      addLog(`Flow Started: ${event.flowId} (${event.screenCount} screens)`);
+    },
+    onFlowCompleted: (event) => {
+      addLog(`Flow Completed: ${event.flowId} in ${event.durationMs}ms`);
+    },
+    onFlowDismissed: (event) => {
+      addLog(
+        `Flow Dismissed: ${event.reason} at screen ${event.screenIndex + 1}/${event.screenCount}`
+      );
+    },
+    onScreenChanged: (event) => {
+      addLog(`Screen Changed: ${event.fromIndex + 1} -> ${event.toIndex + 1}`);
+    },
+    onActionTriggered: (event) => {
+      let log = `Action: ${event.actionType}`;
+      if (event.actionName) {
+        log += ` (event: ${event.actionName})`;
+      }
+      addLog(log);
+    },
+    onFlowError: (event) => {
+      addLog(`Error: ${event.errorType} - ${event.message}`);
+    },
+  });
 
   useEffect(() => {
     const run = async () => {
@@ -125,6 +161,10 @@ export default function App() {
     }
   };
 
+  const handleClearLogs = () => {
+    setEventLogs([]);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Setgreet</Text>
@@ -163,6 +203,24 @@ export default function App() {
         </TouchableOpacity>
       </View>
 
+      {eventLogs.length > 0 && (
+        <View style={styles.logsSection}>
+          <View style={styles.logsHeader}>
+            <Text style={styles.logsTitle}>Event Logs</Text>
+            <TouchableOpacity onPress={handleClearLogs}>
+              <Text style={styles.clearButton}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.logsContainer}>
+            {eventLogs.map((log, index) => (
+              <Text key={index} style={styles.logText}>
+                {log}
+              </Text>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       <Toast />
     </View>
   );
@@ -179,11 +237,11 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 60,
+    marginBottom: 40,
     color: '#000',
   },
   inputSection: {
-    marginBottom: 40,
+    marginBottom: 30,
   },
   labelContainer: {
     flexDirection: 'row',
@@ -220,5 +278,34 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  logsSection: {
+    marginTop: 10,
+  },
+  logsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  logsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  clearButton: {
+    fontSize: 14,
+    color: '#007AFF',
+  },
+  logsContainer: {
+    maxHeight: 150,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    padding: 10,
+  },
+  logText: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
   },
 });

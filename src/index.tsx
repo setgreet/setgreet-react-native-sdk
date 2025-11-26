@@ -1,5 +1,33 @@
 import RNSetgreet from './NativeRNSetgreet';
 
+// Re-export types
+export type {
+  DismissReason,
+  ErrorType,
+  ActionType,
+  FlowStartedEvent,
+  FlowCompletedEvent,
+  FlowDismissedEvent,
+  ScreenChangedEvent,
+  ActionTriggeredEvent,
+  FlowErrorEvent,
+  SetgreetFlowEvent,
+  FlowEventSubscription,
+  FlowEventCallbacks,
+} from './types';
+
+// Re-export event functions and hook
+export {
+  addFlowEventListener,
+  addFlowStartedListener,
+  addFlowCompletedListener,
+  addFlowDismissedListener,
+  addScreenChangedListener,
+  addActionTriggeredListener,
+  addFlowErrorListener,
+  useFlowEvents,
+} from './useFlowEvents';
+
 export type InitConfig = { debugMode: boolean };
 
 export const initialize = (appKey: string, config?: InitConfig) =>

@@ -140,6 +140,85 @@ trackEvent('purchase_completed', {
 });
 ```
 
+### Flow Callbacks
+
+Listen to flow lifecycle events to track user interactions and flow completion.
+
+**Available Callbacks:**
+
+- `onFlowStarted`: Called when a flow begins displaying
+- `onFlowCompleted`: Called when user completes all screens in the flow
+- `onFlowDismissed`: Called when user dismisses the flow before completion
+- `onScreenChanged`: Called when user navigates between screens
+- `onActionTriggered`: Called when user interacts with buttons
+- `onFlowError`: Called when an error occurs during flow operations
+
+**Using the useFlowEvents Hook (Recommended):**
+
+```tsx
+import { useFlowEvents } from '@setgreet/react-native-sdk';
+
+function MyComponent() {
+  useFlowEvents({
+    onFlowStarted: (event) => {
+      console.log(`Flow started: ${event.flowId}`);
+      console.log(`Total screens: ${event.screenCount}`);
+    },
+    onFlowCompleted: (event) => {
+      console.log(`Flow completed: ${event.flowId}`);
+      console.log(`Duration: ${event.durationMs}ms`);
+    },
+    onFlowDismissed: (event) => {
+      console.log(`Flow dismissed: ${event.flowId}`);
+      console.log(`Reason: ${event.reason}`);
+      console.log(`Screen: ${event.screenIndex + 1}/${event.screenCount}`);
+    },
+    onScreenChanged: (event) => {
+      console.log(`Screen changed: ${event.fromIndex + 1} -> ${event.toIndex + 1}`);
+    },
+    onActionTriggered: (event) => {
+      console.log(`Action: ${event.actionType}`);
+      if (event.actionName) {
+        console.log(`Custom event name: ${event.actionName}`);
+      }
+    },
+    onFlowError: (event) => {
+      console.log(`Error: ${event.errorType} - ${event.message}`);
+    },
+  });
+
+  return <View />;
+}
+```
+
+**Using Individual Event Listeners:**
+
+```typescript
+import {
+  addFlowStartedListener,
+  addFlowCompletedListener,
+  addFlowDismissedListener,
+} from '@setgreet/react-native-sdk';
+
+// Subscribe to specific events
+const subscription = addFlowCompletedListener((event) => {
+  console.log(`Flow ${event.flowId} completed in ${event.durationMs}ms`);
+});
+
+// Clean up when done
+subscription.remove();
+```
+
+**Dismiss Reasons:**
+
+| Reason | Description |
+|--------|-------------|
+| `userClose` | User tapped the close button |
+| `userSkip` | User tapped the skip button |
+| `backPress` | User pressed the back button (hardware) |
+| `replaced` | Flow was replaced by a higher priority flow |
+| `programmatic` | Flow was dismissed programmatically |
+
 ## Troubleshooting
 
 ### iOS Issues

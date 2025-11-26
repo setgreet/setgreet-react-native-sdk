@@ -26,6 +26,10 @@ export interface Spec extends TurboModule {
 
   // UI Flow
   showFlow(flowId: string): void;
+
+  // Event Emitter (required for NativeEventEmitter support)
+  addListener(eventType: string): void;
+  removeListeners(count: number): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNSetgreet');
