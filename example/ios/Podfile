@@ -10,23 +10,21 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
+platform :ios, '15.1'
 prepare_react_native_project!
 
 # Specify the Xcode project to use
 project 'ReactNativeSetgreetExample.xcodeproj'
 
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
-end
+# SetgreetSDK is a dynamic XCFramework that dynamically links Lottie,
+# so all pods must be built as dynamic frameworks
+use_frameworks! :linkage => :dynamic
 
 target 'ReactNativeSetgreetExample' do
   config = use_native_modules!
   
   # Add SetgreetSDK dependency directly
-  pod 'SetgreetSDK', :git => 'https://github.com/setgreet/setgreet-ios-sdk.git', :tag => '0.3.1'
+  pod 'SetgreetSDK', :git => 'https://github.com/setgreet/setgreet-ios-sdk.git', :tag => '1.0.0'
 
   use_react_native!(
     :path => "../node_modules/react-native",
@@ -43,5 +41,23 @@ target 'ReactNativeSetgreetExample' do
       "../node_modules/react-native",
       :mac_catalyst_enabled => false
     )
+
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        # Ensure all pods use at least iOS 15.1 (required by Lottie/SetgreetSDK)
+        current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if current && Gem::Version.new(current) < Gem::Version.new('15.1')
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+        end
+      end
+
+      # SetgreetSDK XCFramework was compiled with library evolution enabled,
+      # so Lottie must also be built with it to produce matching dispatch thunks
+      if target.name == 'lottie-ios'
+        target.build_configurations.each do |config|
+          config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+        end
+      end
+    end
   end
 end

@@ -3,8 +3,11 @@ export type DismissReason =
   | 'userClose'
   | 'userSkip'
   | 'backPress'
+  | 'swipeDown'
   | 'replaced'
-  | 'programmatic';
+  | 'programmatic'
+  | 'completed'
+  | 'remindLater';
 
 // Error types for flow errors
 export type ErrorType = 'network' | 'parse' | 'display' | 'unknown';

@@ -27,6 +27,9 @@ export interface Spec extends TurboModule {
   // UI Flow
   showFlow(flowId: string): void;
 
+  // Anonymous ID
+  getAnonymousId(): string | null;
+
   // Event Emitter (required for NativeEventEmitter support)
   addListener(eventType: string): void;
   removeListeners(count: number): void;

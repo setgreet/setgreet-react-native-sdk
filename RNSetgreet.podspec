@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => "13.0" }
+  s.platforms    = { :ios => "15.1" }
   s.source       = { :git => "https://github.com/setgreet/setgreet-react-native-sdk.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{swift,m,h}"
@@ -19,6 +19,6 @@ Pod::Spec.new do |s|
   s.ios.frameworks = 'UIKit'
 
   # SetgreetSDK dependency - this will be resolved by the main app's Podfile
-  s.dependency 'SetgreetSDK', '0.5.0'
+  s.dependency 'SetgreetSDK', '1.0.0'
   s.dependency 'React-Core'
 end

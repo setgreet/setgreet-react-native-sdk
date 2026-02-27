@@ -7,8 +7,8 @@ Setgreet React Native SDK allows you to show Setgreet flows in your React Native
 ## Requirements
 
 - React Native 0.60.0 and above
-- iOS 13.0+ (for iOS apps)
-- Android 5.0 (API level 21) and above (for Android apps)
+- iOS 15.0+ (for iOS apps)
+- Android 6.0 (API level 23) and above (for Android apps)
 
 ## Installation
 
@@ -83,6 +83,16 @@ Clears user identification data and resets user session state for logout scenari
 import { resetUser } from '@setgreet/react-native-sdk';
 
 resetUser();
+```
+
+### Anonymous ID
+
+The SDK automatically generates an anonymous ID on initialization, which persists across app launches. When `identifyUser` is called, the anonymous identity is merged with the identified user. A new anonymous ID is generated when `resetUser()` is called.
+
+```typescript
+import { getAnonymousId } from '@setgreet/react-native-sdk';
+
+const anonId = getAnonymousId();
 ```
 
 ### Show Flow
@@ -230,6 +240,8 @@ permissionSubscription.remove();
 | `backPress` | User pressed the back button (hardware) |
 | `replaced` | Flow was replaced by a higher priority flow |
 | `programmatic` | Flow was dismissed programmatically |
+| `swipeDown` | User swiped down to dismiss a bottom sheet |
+| `completed` | Flow reached its end node |
 
 **Permission Types:**
 

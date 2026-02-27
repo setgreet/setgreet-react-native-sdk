@@ -32,12 +32,14 @@ class RNSetgreet: RCTEventEmitter {
   func initialize(appKey: String, config: NSDictionary?) {
     let debug = (config?["debugMode"] as? Bool) ?? false
 
-    Setgreet.shared.initialize(
-      appKey: appKey,
-      config: .init(debugMode: debug)
-    )
+    DispatchQueue.main.async { [weak self] in
+      Setgreet.shared.initialize(
+        appKey: appKey,
+        config: .init(debugMode: debug)
+      )
 
-    setupFlowCallbacks()
+      self?.setupFlowCallbacks()
+    }
   }
 
   private func setupFlowCallbacks() {
@@ -163,6 +165,12 @@ class RNSetgreet: RCTEventEmitter {
       return "replaced"
     case .programmatic:
       return "programmatic"
+    case .swipeDown:
+      return "swipeDown"
+    case .completed:
+      return "completed"
+    case .remindLater:
+      return "remindLater"
     }
   }
 
@@ -179,9 +187,14 @@ class RNSetgreet: RCTEventEmitter {
     }
   }
 
+  @objc(getAnonymousId)
+  func getAnonymousId() -> String? {
+    return Setgreet.shared.anonymousId
+  }
+
   @objc(identifyUser:attributes:operation:locale:)
   func identifyUser(userId: String, attributes: NSDictionary?, operation: String?, locale: String?) {
-    let op: Operation = (operation?.lowercased() == "update") ? .update : .create
+    let op: SetgreetSDK.Operation = (operation?.lowercased() == "update") ? .update : .create
 
     Setgreet.shared.identifyUser(
       userId: userId,
@@ -208,7 +221,9 @@ class RNSetgreet: RCTEventEmitter {
 
   @objc(showFlow:)
   func showFlow(flowId: String) {
-    Setgreet.shared.showFlow(flowId: flowId)
+    DispatchQueue.main.async {
+      Setgreet.shared.showFlow(flowId: flowId)
+    }
   }
 
   // MARK: - Event Emitter Required Methods

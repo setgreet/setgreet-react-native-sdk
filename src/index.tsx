@@ -63,3 +63,5 @@ export const trackScreen = (
 ) => RNSetgreet.trackScreen(screenName, properties ?? null);
 
 export const showFlow = (flowId: string) => RNSetgreet.showFlow(flowId);
+
+export const getAnonymousId = (): string | null => RNSetgreet.getAnonymousId();

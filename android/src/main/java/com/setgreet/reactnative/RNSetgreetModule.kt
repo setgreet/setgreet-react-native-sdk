@@ -159,6 +159,9 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
     DismissReason.BACK_PRESS -> "backPress"
     DismissReason.REPLACED -> "replaced"
     DismissReason.PROGRAMMATIC -> "programmatic"
+    DismissReason.SWIPE_DOWN -> "swipeDown"
+    DismissReason.COMPLETED -> "completed"
+    DismissReason.REMIND_LATER -> "remindLater"
   }
 
   private fun ErrorType.toJsString(): String = when (this) {
@@ -174,6 +177,10 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
 
   override fun removeListeners(count: Double) {
     listenerCount = (listenerCount - count.toInt()).coerceAtLeast(0)
+  }
+
+  override fun getAnonymousId(): String? {
+    return Setgreet.anonymousId
   }
 
   override fun identifyUser(userId: String, attributes: ReadableMap?, operation: String?, locale: String?) {
