@@ -1,0 +1,49 @@
+name: Release React Native SDK
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify version matches package.json
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "${{ steps.version.outputs.VERSION }}" ]; then
+            echo "::error::Tag ${{ steps.version.outputs.VERSION }} does not match package.json version=$PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run prepare
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          name: ${{ steps.version.outputs.VERSION }}
+          generate_release_notes: true
