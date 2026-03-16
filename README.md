@@ -167,6 +167,39 @@ trackEvent('purchase_completed', {
 });
 ```
 
+### Sync Theme
+
+Sync your app's theme with Setgreet to enable theme-aware flow screens in the editor. Since React Native does not have a centralized theme system, you provide your color palette and typography manually.
+
+```typescript
+import { syncTheme } from '@setgreet/react-native-sdk';
+
+syncTheme({
+  colors: {
+    primary: '#6200EE',
+    onPrimary: '#FFFFFF',
+    secondary: '#03DAC6',
+    surface: '#FFFFFF',
+    onSurface: '#000000',
+    error: '#B00020',
+  },
+  typography: {
+    bodyMedium: {
+      fontFamily: 'Roboto',
+      fontSize: 14,
+      fontWeight: 400,
+    },
+    headlineMedium: {
+      fontFamily: 'Roboto',
+      fontSize: 28,
+      fontWeight: 400,
+    },
+  },
+});
+```
+
+Call `syncTheme()` after `initialize()` — typically once after app launch or when your theme changes.
+
 ### Flow Callbacks
 
 Listen to flow lifecycle events to track user interactions and flow completion.

@@ -1,4 +1,5 @@
 import RNSetgreet from './NativeRNSetgreet';
+import { _setThemeConfig } from './theme';
 
 // Re-export types
 export type {
@@ -32,10 +33,21 @@ export {
   useFlowEvents,
 } from './useFlowEvents';
 
-export type InitConfig = { debugMode: boolean };
+// Re-export theme types and sync function
+export type {
+  SetgreetColorScheme,
+  SetgreetTypeStyle,
+  SetgreetTypography,
+  SetgreetTheme,
+} from './theme';
+export { syncTheme } from './theme';
 
-export const initialize = (appKey: string, config?: InitConfig) =>
+export type InitConfig = { debugMode: boolean; apiUrl?: string };
+
+export const initialize = (appKey: string, config?: InitConfig) => {
+  _setThemeConfig(appKey, config?.apiUrl);
   RNSetgreet.initialize(appKey, config ?? { debugMode: false });
+};
 
 export const identifyUser = (
   userId: string,
