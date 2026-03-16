@@ -50,23 +50,6 @@ initialize('APP_KEY', {
 });
 ```
 
-### Theme sync
-
-`initialize` forwards to the native Android and iOS SDKs, which automatically
-sync your app's theme (colors, typography) to the Setgreet dashboard at
-startup so generated flows match your brand. There is nothing to call from
-JavaScript — it happens for you.
-
-The sync is fire-and-forget and gated client-side: it only sends when the
-theme changes, the app version changes, or a 7-day TTL elapses, so most
-launches do no extra network work.
-
-> **Availability:** theme sync ships in the native SDKs from version
-> **1.0.3**. This package currently pins the native SDKs at `1.0.2`, so theme
-> sync activates once those dependencies are bumped to `1.0.3+` in a future
-> release of this package. Until then, set your theme manually in the
-> dashboard Brand tab.
-
 ### Identify User
 
 Identifies a user for Setgreet analytics and flow management.
@@ -83,11 +66,16 @@ Identifies a user for Setgreet analytics and flow management.
 ```typescript
 import { identifyUser } from '@setgreet/react-native-sdk';
 
-identifyUser('user123', {
-  name: 'John Doe',
-  email: 'john@example.com',
-  plan: 'premium',
-}, 'create', 'en-US');
+identifyUser(
+  'user123',
+  {
+    name: 'John Doe',
+    email: 'john@example.com',
+    plan: 'premium',
+  },
+  'create',
+  'en-US'
+);
 ```
 
 ### Reset User
@@ -235,7 +223,9 @@ function MyComponent() {
       console.log(`Screen: ${event.screenIndex + 1}/${event.screenCount}`);
     },
     onScreenChanged: (event) => {
-      console.log(`Screen changed: ${event.fromIndex + 1} -> ${event.toIndex + 1}`);
+      console.log(
+        `Screen changed: ${event.fromIndex + 1} -> ${event.toIndex + 1}`
+      );
     },
     onActionTriggered: (event) => {
       console.log(`Action: ${event.actionType}`);
@@ -283,33 +273,33 @@ permissionSubscription.remove();
 
 **Dismiss Reasons:**
 
-| Reason | Description |
-|--------|-------------|
-| `userClose` | User tapped the close button |
-| `userSkip` | User tapped the skip button |
-| `backPress` | User pressed the back button (hardware) |
-| `replaced` | Flow was replaced by a higher priority flow |
-| `programmatic` | Flow was dismissed programmatically |
-| `swipeDown` | User swiped down to dismiss a bottom sheet |
-| `completed` | Flow reached its end node |
+| Reason         | Description                                 |
+| -------------- | ------------------------------------------- |
+| `userClose`    | User tapped the close button                |
+| `userSkip`     | User tapped the skip button                 |
+| `backPress`    | User pressed the back button (hardware)     |
+| `replaced`     | Flow was replaced by a higher priority flow |
+| `programmatic` | Flow was dismissed programmatically         |
+| `swipeDown`    | User swiped down to dismiss a bottom sheet  |
+| `completed`    | Flow reached its end node                   |
 
 **Permission Types:**
 
-| Type | Description |
-|------|-------------|
+| Type           | Description                  |
+| -------------- | ---------------------------- |
 | `notification` | Push notification permission |
-| `location` | Location access permission |
-| `camera` | Camera access permission |
+| `location`     | Location access permission   |
+| `camera`       | Camera access permission     |
 
 **Permission Results:**
 
-| Result | Description |
-|--------|-------------|
-| `granted` | Permission was granted by the user |
-| `denied` | Permission was denied by the user |
+| Result               | Description                                                      |
+| -------------------- | ---------------------------------------------------------------- |
+| `granted`            | Permission was granted by the user                               |
+| `denied`             | Permission was denied by the user                                |
 | `permanently_denied` | Permission was permanently denied (user must enable in settings) |
-| `already_granted` | Permission was already granted before the request |
-| `not_required` | Permission request was not required or not applicable |
+| `already_granted`    | Permission was already granted before the request                |
+| `not_required`       | Permission request was not required or not applicable            |
 
 ## Troubleshooting
 
