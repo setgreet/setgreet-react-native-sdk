@@ -85,15 +85,21 @@ export interface SetgreetTheme {
 // Internal State
 // ============================================
 
+/** Default API base URL — matches the native SDKs' default endpoint. */
+const DEFAULT_API_URL = 'https://api.setgreet.com/api/v1';
+
 let storedAppKey: string | null = null;
-let storedApiUrl: string | null = null;
+let storedApiUrl: string = DEFAULT_API_URL;
 
 /**
  * @internal Called by initialize() to store the app key for theme sync.
+ * If `apiUrl` is provided in InitConfig, it overrides the default.
  */
 export function _setThemeConfig(appKey: string, apiUrl?: string): void {
   storedAppKey = appKey;
-  storedApiUrl = apiUrl || 'https://api.setgreet.com/api/v1';
+  if (apiUrl) {
+    storedApiUrl = apiUrl;
+  }
 }
 
 // ============================================
