@@ -301,6 +301,21 @@ permissionSubscription.remove();
 | `already_granted`    | Permission was already granted before the request                |
 | `not_required`       | Permission request was not required or not applicable            |
 
+## External Data in Flows
+
+Flows can render data fetched from **your own** API — a product list filtered by answers the user gave earlier in the same flow. You register the endpoint once in the Setgreet dashboard (Data Sources), bind it into a screen, and it renders.
+
+**Nothing to do on the JavaScript side.** Screens are rendered by the native iOS and Android SDKs, which make the call and swap in the resolved screen on entry. This module is a bridge, so the feature needs no new API, no new permission, and no new dependency here.
+
+What is worth knowing:
+
+- **It needs native SDK 1.2.0 or newer.** This package pins the native versions in `android/build.gradle` and `RNSetgreet.podspec`; on an older pin the screen renders without its data rather than failing.
+- **The request goes from the device to your API**, so your endpoint must be reachable over HTTPS from the public internet. Setgreet signs each request and asserts the end user's id; verify the signature on your side.
+- **A failure degrades, it does not blank.** If your API is slow or down, the screen renders without the data-bound parts. Only if the flow author explicitly chose "skip screen" is it passed over.
+- **Answers reach your API by input name.** An input named `tire_size` in the editor arrives as `tire_size`. Attributes you set via `identifyUser` are available to it too.
+
+See `docs/DATA_SOURCES.md` in the Setgreet backend repository for the endpoint contract and the signature-verification recipe.
+
 ## Troubleshooting
 
 ### iOS Issues
