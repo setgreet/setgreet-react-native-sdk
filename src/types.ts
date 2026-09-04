@@ -13,20 +13,45 @@ export type DismissReason =
 export type ErrorType = 'network' | 'parse' | 'display' | 'unknown';
 
 // Action types for button actions
+/**
+ * The action a tapped component performed, as the native SDKs report it on
+ * `actionTriggered`: the Android `ActionType` enum name lower-cased. (The iOS
+ * SDK does not currently emit this event.) The previous union listed names
+ * no runtime ever sent (`back`, `close`, `notification_permission`, ...).
+ */
 export type ActionType =
   | 'next'
-  | 'back'
-  | 'close'
+  | 'previous'
   | 'skip'
-  | 'notification_permission'
-  | 'location_permission'
-  | 'camera_permission'
-  | 'internalUrl'
-  | 'externalUrl'
+  | 'dismiss'
+  | 'remind_later'
+  | 'url'
+  | 'deeplink'
+  | 'request_notification_permission'
+  | 'request_location_permission'
+  | 'request_camera_permission'
+  | 'request_tracking_permission'
+  | 'request_microphone_permission'
+  | 'request_photo_library_permission'
+  | 'request_review'
+  | 'share'
+  | 'open_settings'
+  | 'track_event'
+  | 'custom'
   | 'none';
 
 // Permission types
-export type PermissionType = 'notification' | 'location' | 'camera';
+/**
+ * The permission a flow requested. `tracking` is iOS App Tracking
+ * Transparency and is reported as `not_required` on Android.
+ */
+export type PermissionType =
+  | 'notification'
+  | 'location'
+  | 'camera'
+  | 'tracking'
+  | 'microphone'
+  | 'photoLibrary';
 
 // Permission result types
 export type PermissionResult =
