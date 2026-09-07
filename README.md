@@ -285,11 +285,14 @@ permissionSubscription.remove();
 
 **Permission Types:**
 
-| Type           | Description                  |
-| -------------- | ---------------------------- |
-| `notification` | Push notification permission |
-| `location`     | Location access permission   |
-| `camera`       | Camera access permission     |
+| Type           | Description                                                     |
+| -------------- | --------------------------------------------------------------- |
+| `notification` | Push notification permission                                    |
+| `location`     | Location access permission                                      |
+| `camera`       | Camera access permission                                        |
+| `tracking`     | App Tracking Transparency (iOS only; `not_required` on Android) |
+| `microphone`   | Microphone access permission                                    |
+| `photoLibrary` | Photo library read access                                       |
 
 **Permission Results:**
 
@@ -345,7 +348,7 @@ If you encounter CocoaPods issues:
 
 #### Permission Requests Not Working
 
-If your flows use permission buttons (notification, location, camera), you need to add the required keys to your `Info.plist`:
+If your flows use permission buttons, you need to add the required keys to your `Info.plist`:
 
 ```xml
 <!-- For location permission -->
@@ -355,9 +358,25 @@ If your flows use permission buttons (notification, location, camera), you need 
 <!-- For camera permission -->
 <key>NSCameraUsageDescription</key>
 <string>Your description for camera usage</string>
+
+<!-- For tracking permission (App Tracking Transparency) -->
+<key>NSUserTrackingUsageDescription</key>
+<string>Your description for tracking usage</string>
+
+<!-- For microphone permission -->
+<key>NSMicrophoneUsageDescription</key>
+<string>Your description for microphone usage</string>
+
+<!-- For photo library permission -->
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Your description for photo library usage</string>
 ```
 
-Note: Notification permission doesn't require an Info.plist key.
+Note: Notification permission doesn't require an Info.plist key. A missing key is logged, reported as `not_required`, and the flow advances.
+
+On Android the SDK declares only `INTERNET`; declare the permissions your flows request in your app's `AndroidManifest.xml`: `POST_NOTIFICATIONS` (API 33+), `ACCESS_FINE_LOCATION`, `CAMERA`, `RECORD_AUDIO`, and `READ_MEDIA_IMAGES` (API 33+) or `READ_EXTERNAL_STORAGE` below. Tracking has no Android equivalent and advances immediately.
+
+A screen can also carry a permission gate ("Skip when granted" in the editor): the SDK skips the primer when the permission is already granted, with nothing to do on the JavaScript side.
 
 ### Android Issues
 
