@@ -1,6 +1,6 @@
 {
   "name": "@setgreet/react-native-sdk",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Official React Native SDK for Setgreet",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
