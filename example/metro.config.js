@@ -18,7 +18,12 @@ const config = {
     },
     // Prevent duplicate React instances when SDK is symlinked
     nodeModulesPaths: [exampleNodeModules],
-    blockList: [new RegExp(path.resolve(sdkRoot, 'node_modules', 'react') + '(/.*|$)'), new RegExp(path.resolve(sdkRoot, 'node_modules', 'react-native') + '(/.*|$)')],
+    blockList: [
+      new RegExp(path.resolve(sdkRoot, 'node_modules', 'react') + '(/.*|$)'),
+      new RegExp(
+        path.resolve(sdkRoot, 'node_modules', 'react-native') + '(/.*|$)'
+      ),
+    ],
   },
 };
 
