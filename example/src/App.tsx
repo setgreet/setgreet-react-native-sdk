@@ -6,15 +6,19 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import Purchases from 'react-native-purchases';
 import {
   initialize,
   identifyUser,
   trackEvent,
   showFlow,
+  setPurchaseProvider,
   useFlowEvents,
 } from '@setgreet/react-native-sdk';
+import { SetgreetRevenueCatProvider } from './setgreetRevenueCatProvider';
 
 // Your Setgreet app key
 const APP_KEY = 'YOUR_APP_KEY_HERE';
@@ -35,6 +39,35 @@ const TEST_USER_ATTRIBUTES = {
 };
 
 const TEST_USER_LOCALE = 'en-US';
+
+// ---------------------------------------------------------------------------
+// Paywalls: paste your RevenueCat PUBLIC SDK keys here, one per platform.
+// While a key is left as the placeholder, RevenueCat is not configured on
+// that platform: the provider then reports `provider_not_initialized` and
+// every paywall screen follows its `unavailablePolicy` (skipped by default).
+// ---------------------------------------------------------------------------
+const REVENUECAT_API_KEY_PLACEHOLDER = 'REVENUECAT_PUBLIC_API_KEY';
+const REVENUECAT_API_KEY = Platform.select({
+  ios: REVENUECAT_API_KEY_PLACEHOLDER,
+  android: REVENUECAT_API_KEY_PLACEHOLDER,
+  default: REVENUECAT_API_KEY_PLACEHOLDER,
+});
+
+let revenueCatConfigured = false;
+
+// Call after `initialize`. `SetgreetRevenueCatProvider` is a copy-paste
+// reference file (src/setgreetRevenueCatProvider.ts): the Setgreet SDK links
+// no RevenueCat itself, and configuring RevenueCat stays the app's call.
+const setUpPurchases = () => {
+  if (
+    !revenueCatConfigured &&
+    REVENUECAT_API_KEY !== REVENUECAT_API_KEY_PLACEHOLDER
+  ) {
+    Purchases.configure({ apiKey: REVENUECAT_API_KEY });
+    revenueCatConfigured = true;
+  }
+  setPurchaseProvider(new SetgreetRevenueCatProvider());
+};
 
 // Validation function
 const validateConfig = (appKey: string, flowId: string) => {
@@ -89,6 +122,26 @@ export default function App() {
     onFlowError: (event) => {
       addLog(`Error: ${event.errorType} - ${event.message}`);
     },
+    onPurchaseCompleted: (event) => {
+      addLog(
+        `Purchase Completed: ${event.productRef} (${event.accessRefs.join(', ')})`
+      );
+    },
+    onPurchaseCancelled: (event) => {
+      addLog(`Purchase Cancelled: ${event.productRef}`);
+    },
+    onPurchaseFailed: (event) => {
+      addLog(`Purchase Failed: ${event.productRef} - ${event.error.code}`);
+    },
+    onPurchasePending: (event) => {
+      addLog(`Purchase Pending: ${event.productRef}`);
+    },
+    onRestoreCompleted: (event) => {
+      addLog(`Restore Completed: ${event.status}`);
+    },
+    onRestoreFailed: (event) => {
+      addLog(`Restore Failed: ${event.error.code}`);
+    },
   });
 
   useEffect(() => {
@@ -100,6 +153,9 @@ export default function App() {
         initialize(APP_KEY, {
           debugMode: DEBUG_MODE,
         });
+
+        // Paywalls: configure RevenueCat and register the purchase provider
+        setUpPurchases();
 
         // Identify user with locale
         identifyUser(
@@ -123,6 +179,8 @@ export default function App() {
       initialize(appKey, {
         debugMode: DEBUG_MODE,
       });
+
+      setUpPurchases();
 
       identifyUser(
         TEST_USER_ID,

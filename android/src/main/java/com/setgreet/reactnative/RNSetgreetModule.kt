@@ -19,7 +19,18 @@ import com.setgreet.model.SetgreetConfig
 class RNSetgreetModule(reactContext: ReactApplicationContext) :
   NativeRNSetgreetSpec(reactContext) {
 
+  @Volatile
   private var listenerCount = 0
+
+  private val purchaseBridge = RNSetgreetPurchaseBridge()
+
+  /** Held strongly here and only weakly by the bridge (see RNSetgreetPurchaseBridge). */
+  private val purchaseRequestSender = object : RNSetgreetPurchaseBridge.Sender {
+    override fun canReachJs(): Boolean =
+      listenerCount > 0 && reactApplicationContext.hasActiveReactInstance()
+
+    override fun emitRequest(body: WritableMap): Boolean = emitPurchaseRequest(body)
+  }
 
   override fun getName(): String {
     return NAME
@@ -66,13 +77,38 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
       onError { event ->
         sendEvent(createFlowErrorEvent(event))
       }
+      onPurchaseCompleted { event ->
+        sendEvent(createPurchaseCompletedEvent(event))
+      }
+      onPurchaseCancelled { event ->
+        sendEvent(createPurchaseCancelledEvent(event))
+      }
+      onPurchaseFailed { event ->
+        sendEvent(createPurchaseFailedEvent(event))
+      }
+      onPurchasePending { event ->
+        sendEvent(createPurchasePendingEvent(event))
+      }
+      onRestoreCompleted { event ->
+        sendEvent(createRestoreCompletedEvent(event))
+      }
+      onRestoreFailed { event ->
+        sendEvent(createRestoreFailedEvent(event))
+      }
     }
   }
 
   private fun sendEvent(params: WritableMap) {
-    reactApplicationContext
-      .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-      .emit(EVENT_NAME, params)
+    // Flow and purchase outcome events can fire after the flow was dismissed
+    // or the JS context was torn down (a purchase outlives both).
+    if (!reactApplicationContext.hasActiveReactInstance()) return
+    try {
+      reactApplicationContext
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+        .emit(EVENT_NAME, params)
+    } catch (e: RuntimeException) {
+      // The React instance went away between the check and the emit.
+    }
   }
 
   private fun createFlowStartedEvent(event: SetgreetFlowEvent.FlowStarted): WritableMap {
@@ -153,6 +189,84 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  private fun createPurchaseCompletedEvent(event: SetgreetFlowEvent.PurchaseCompleted): WritableMap {
+    return Arguments.createMap().apply {
+      putString("type", "purchaseCompleted")
+      putString("flowId", event.flowId)
+      putString("screenId", event.screenId)
+      putString("componentId", event.componentId)
+      putString("productRef", event.productRef)
+      putString("provider", event.provider)
+      putArray("accessRefs", stringArray(event.accessRefs))
+      putDouble("timestamp", event.timestamp.toDouble())
+    }
+  }
+
+  private fun createPurchaseCancelledEvent(event: SetgreetFlowEvent.PurchaseCancelled): WritableMap {
+    return Arguments.createMap().apply {
+      putString("type", "purchaseCancelled")
+      putString("flowId", event.flowId)
+      putString("screenId", event.screenId)
+      putString("componentId", event.componentId)
+      putString("productRef", event.productRef)
+      putString("provider", event.provider)
+      putDouble("timestamp", event.timestamp.toDouble())
+    }
+  }
+
+  private fun createPurchaseFailedEvent(event: SetgreetFlowEvent.PurchaseFailed): WritableMap {
+    return Arguments.createMap().apply {
+      putString("type", "purchaseFailed")
+      putString("flowId", event.flowId)
+      putString("screenId", event.screenId)
+      putString("componentId", event.componentId)
+      putString("productRef", event.productRef)
+      putString("provider", event.provider)
+      putMap("error", RNSetgreetPurchaseCoding.encode(event.error))
+      putDouble("timestamp", event.timestamp.toDouble())
+    }
+  }
+
+  private fun createPurchasePendingEvent(event: SetgreetFlowEvent.PurchasePending): WritableMap {
+    return Arguments.createMap().apply {
+      putString("type", "purchasePending")
+      putString("flowId", event.flowId)
+      putString("screenId", event.screenId)
+      putString("componentId", event.componentId)
+      putString("productRef", event.productRef)
+      putString("provider", event.provider)
+      putDouble("timestamp", event.timestamp.toDouble())
+    }
+  }
+
+  private fun createRestoreCompletedEvent(event: SetgreetFlowEvent.RestoreCompleted): WritableMap {
+    return Arguments.createMap().apply {
+      putString("type", "restoreCompleted")
+      putString("flowId", event.flowId)
+      putString("screenId", event.screenId)
+      putString("componentId", event.componentId)
+      putString("provider", event.provider)
+      putString("status", event.status.rawValue)
+      putArray("accessRefs", stringArray(event.accessRefs))
+      putDouble("timestamp", event.timestamp.toDouble())
+    }
+  }
+
+  private fun createRestoreFailedEvent(event: SetgreetFlowEvent.RestoreFailed): WritableMap {
+    return Arguments.createMap().apply {
+      putString("type", "restoreFailed")
+      putString("flowId", event.flowId)
+      putString("screenId", event.screenId)
+      putString("componentId", event.componentId)
+      putString("provider", event.provider)
+      putMap("error", RNSetgreetPurchaseCoding.encode(event.error))
+      putDouble("timestamp", event.timestamp.toDouble())
+    }
+  }
+
+  private fun stringArray(values: List<String>) =
+    Arguments.createArray().apply { values.forEach { pushString(it) } }
+
   private fun DismissReason.toJsString(): String = when (this) {
     DismissReason.USER_CLOSE -> "userClose"
     DismissReason.USER_SKIP -> "userSkip"
@@ -181,6 +295,52 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
 
   override fun getAnonymousId(): String? {
     return Setgreet.anonymousId
+  }
+
+  /**
+   * Registers a proxy provider that forwards every call to the JS provider.
+   *
+   * Inline, not posted to the UI thread: [identifyUser] / [resetUser] run
+   * inline on this thread and read the registered provider right away, so an
+   * `identifyUser` that follows `setPurchaseProvider` must find it. The SDK's
+   * registration is synchronized and safe from any thread. Its preload runs on
+   * the main dispatcher, which posts asynchronous messages, so it is not
+   * guaranteed to start after the [initialize] runnable posted before it. That
+   * is harmless: the catalog sync and the access-attribute write come after the
+   * JS round trip and are skipped while the SDK is not initialized, so at worst
+   * this launch's registration-time sync is skipped.
+   */
+  override fun setPurchaseProvider(providerId: String, defaultSource: ReadableMap) {
+    purchaseBridge.attach(purchaseRequestSender)
+    val provider = RNSetgreetPurchaseProvider(providerId, purchaseBridge)
+    val source = RNSetgreetPurchaseCoding.source(defaultSource.toHashMap())
+    Setgreet.setPurchaseProvider(provider, source)
+  }
+
+  /** JS answered a purchase request. Arrives on the native modules thread. */
+  override fun resolvePurchaseRequest(requestId: String, result: ReadableMap?, error: ReadableMap?) {
+    purchaseBridge.resolve(requestId, result?.toHashMap(), error?.toHashMap())
+  }
+
+  /**
+   * The JS context is going away (reload, teardown): every purchase call
+   * waiting on JS fails now instead of hanging.
+   */
+  override fun invalidate() {
+    purchaseBridge.invalidate()
+    super.invalidate()
+  }
+
+  private fun emitPurchaseRequest(body: WritableMap): Boolean {
+    if (!reactApplicationContext.hasActiveReactInstance()) return false
+    return try {
+      reactApplicationContext
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+        .emit(RNSetgreetPurchaseBridge.REQUEST_EVENT_NAME, body)
+      true
+    } catch (e: RuntimeException) {
+      false
+    }
   }
 
   override fun identifyUser(userId: String, attributes: ReadableMap?, operation: String?, locale: String?) {

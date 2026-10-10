@@ -9,6 +9,12 @@ import type {
   ActionTriggeredEvent,
   PermissionRequestedEvent,
   FlowErrorEvent,
+  PurchaseCompletedEvent,
+  PurchaseCancelledEvent,
+  PurchaseFailedEvent,
+  PurchasePendingEvent,
+  RestoreCompletedEvent,
+  RestoreFailedEvent,
   FlowEventCallbacks,
   FlowEventSubscription,
 } from './types';
@@ -166,6 +172,108 @@ export function addFlowErrorListener(
 }
 
 /**
+ * Subscribe to purchase completed events
+ */
+export function addPurchaseCompletedListener(
+  callback: (event: PurchaseCompletedEvent) => void
+): FlowEventSubscription {
+  const subscription = eventEmitter.addListener(
+    'SetgreetFlowEvent',
+    (event: SetgreetFlowEvent) => {
+      if (event.type === 'purchaseCompleted') {
+        callback(event);
+      }
+    }
+  );
+  return { remove: () => subscription.remove() };
+}
+
+/**
+ * Subscribe to purchase cancelled events
+ */
+export function addPurchaseCancelledListener(
+  callback: (event: PurchaseCancelledEvent) => void
+): FlowEventSubscription {
+  const subscription = eventEmitter.addListener(
+    'SetgreetFlowEvent',
+    (event: SetgreetFlowEvent) => {
+      if (event.type === 'purchaseCancelled') {
+        callback(event);
+      }
+    }
+  );
+  return { remove: () => subscription.remove() };
+}
+
+/**
+ * Subscribe to purchase failed events
+ */
+export function addPurchaseFailedListener(
+  callback: (event: PurchaseFailedEvent) => void
+): FlowEventSubscription {
+  const subscription = eventEmitter.addListener(
+    'SetgreetFlowEvent',
+    (event: SetgreetFlowEvent) => {
+      if (event.type === 'purchaseFailed') {
+        callback(event);
+      }
+    }
+  );
+  return { remove: () => subscription.remove() };
+}
+
+/**
+ * Subscribe to purchase pending events
+ */
+export function addPurchasePendingListener(
+  callback: (event: PurchasePendingEvent) => void
+): FlowEventSubscription {
+  const subscription = eventEmitter.addListener(
+    'SetgreetFlowEvent',
+    (event: SetgreetFlowEvent) => {
+      if (event.type === 'purchasePending') {
+        callback(event);
+      }
+    }
+  );
+  return { remove: () => subscription.remove() };
+}
+
+/**
+ * Subscribe to restore completed events
+ */
+export function addRestoreCompletedListener(
+  callback: (event: RestoreCompletedEvent) => void
+): FlowEventSubscription {
+  const subscription = eventEmitter.addListener(
+    'SetgreetFlowEvent',
+    (event: SetgreetFlowEvent) => {
+      if (event.type === 'restoreCompleted') {
+        callback(event);
+      }
+    }
+  );
+  return { remove: () => subscription.remove() };
+}
+
+/**
+ * Subscribe to restore failed events
+ */
+export function addRestoreFailedListener(
+  callback: (event: RestoreFailedEvent) => void
+): FlowEventSubscription {
+  const subscription = eventEmitter.addListener(
+    'SetgreetFlowEvent',
+    (event: SetgreetFlowEvent) => {
+      if (event.type === 'restoreFailed') {
+        callback(event);
+      }
+    }
+  );
+  return { remove: () => subscription.remove() };
+}
+
+/**
  * React hook for subscribing to Setgreet flow events
  *
  * @example
@@ -209,6 +317,24 @@ export function useFlowEvents(callbacks: FlowEventCallbacks): void {
         break;
       case 'flowError':
         currentCallbacks.onFlowError?.(event);
+        break;
+      case 'purchaseCompleted':
+        currentCallbacks.onPurchaseCompleted?.(event);
+        break;
+      case 'purchaseCancelled':
+        currentCallbacks.onPurchaseCancelled?.(event);
+        break;
+      case 'purchaseFailed':
+        currentCallbacks.onPurchaseFailed?.(event);
+        break;
+      case 'purchasePending':
+        currentCallbacks.onPurchasePending?.(event);
+        break;
+      case 'restoreCompleted':
+        currentCallbacks.onRestoreCompleted?.(event);
+        break;
+      case 'restoreFailed':
+        currentCallbacks.onRestoreFailed?.(event);
         break;
     }
   }, []);

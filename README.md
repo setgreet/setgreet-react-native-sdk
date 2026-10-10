@@ -201,6 +201,7 @@ Listen to flow lifecycle events to track user interactions and flow completion.
 - `onActionTriggered`: Called when user interacts with buttons
 - `onPermissionRequested`: Called when a permission request completes
 - `onFlowError`: Called when an error occurs during flow operations
+- Purchase and restore callbacks: see [Purchases and paywalls](#purchases-and-paywalls)
 
 **Using the useFlowEvents Hook (Recommended):**
 
@@ -303,6 +304,100 @@ permissionSubscription.remove();
 | `permanently_denied` | Permission was permanently denied (user must enable in settings) |
 | `already_granted`    | Permission was already granted before the request                |
 | `not_required`       | Permission request was not required or not applicable            |
+
+## Purchases and paywalls
+
+Setgreet renders paywall screens natively and branches the flow on the outcome of a purchase. It wraps no purchase SDK: your app implements one interface, `SetgreetPurchaseProvider`, by calling whatever it already uses (RevenueCat, Adapty, StoreKit, Play Billing, ...) and registers it once. The native SDK then loads the products, fills the plan picker, resolves price tokens in copy, locks the button while a purchase runs, branches on the result, sends analytics and syncs the product catalog to the dashboard.
+
+### Register a provider
+
+Call `setPurchaseProvider` once at startup, in this order: `initialize`, then `setPurchaseProvider`, then `identifyUser`. An `identifyUser` call reaches the provider (its `identify`, and the access attributes written afterwards) only once the provider is registered. Configuring your purchase SDK stays your call.
+
+```typescript
+import Purchases from 'react-native-purchases';
+import {
+  identifyUser,
+  initialize,
+  setPurchaseProvider,
+} from '@setgreet/react-native-sdk';
+import { SetgreetRevenueCatProvider } from './setgreetRevenueCatProvider';
+
+Purchases.configure({ apiKey: '<your RevenueCat public SDK key>' });
+initialize('APP_KEY', { debugMode: false });
+setPurchaseProvider(new SetgreetRevenueCatProvider());
+identifyUser('user123');
+```
+
+The default source (the current offering unless you pass another one) is loaded in the background at registration, so the catalog reaches the dashboard before any paywall is shown. A screen without a plan picker reads its products from it:
+
+```typescript
+import {
+  SetgreetPurchaseSource,
+  setPurchaseProvider,
+} from '@setgreet/react-native-sdk';
+
+setPurchaseProvider(provider, {
+  defaultSource: SetgreetPurchaseSource.offering('onboarding'),
+});
+// Also SetgreetPurchaseSource.currentOffering and SetgreetPurchaseSource.placement('id')
+```
+
+### The interface
+
+```typescript
+interface SetgreetPurchaseProvider {
+  readonly providerId: string; // 'revenuecat', 'adapty', ...; ^[a-z][a-z0-9_]{0,39}$
+  loadProducts(
+    source: SetgreetPurchaseSource
+  ): Promise<SetgreetPurchaseProduct[]>;
+  purchase(
+    productRef: string,
+    source: SetgreetPurchaseSource
+  ): Promise<SetgreetPurchaseResult>;
+  restorePurchases(): Promise<SetgreetRestoreResult>;
+  accessState(): Promise<SetgreetPurchaseAccessState | null>; // null: cannot say
+  trackPaywallImpression?(context: SetgreetPaywallImpressionContext): void;
+  setAttributes?(attributes: Record<string, string>): void;
+  identify?(userId: string): Promise<void>;
+  reset?(): Promise<void>;
+}
+```
+
+- A product `ref` (a RevenueCat package id such as `$rc_annual`) is unique only within its source. `purchase` receives the source the ref came from: buy the product you returned for that ref from that source.
+- `purchase` resolves to `{ status: 'purchased' | 'cancelled' | 'failed' | 'pending', productRef, accessRefs, error }` and `restorePurchases` to `{ status: 'restored' | 'nothingToRestore' | 'failed', accessRefs, error }`. Report outcomes as statuses. A rejected promise is reported as `failed`, except a `purchase` rejected with code `purchase_cancelled` or `purchase_pending`, which is reported as `cancelled` or `pending`.
+- When products cannot be loaded, `loadProducts` rejects with a purchase error, e.g. `throw purchaseError('network_error', { message })`. Any other rejection is reported as `unknown`. Error codes: `not_configured`, `provider_not_initialized`, `product_not_found`, `product_unavailable`, `purchase_cancelled`, `purchase_failed`, `purchase_pending`, `restore_failed`, `network_error`, `identity_error`, `unknown`.
+- `priceAmount` is a number (`49.99`). The native SDK reads it as a decimal without binary rounding.
+- `identify` and `reset` are optional. Implement them only if Setgreet's `identifyUser` / `resetUser` should drive your purchase SDK's identity. They run one at a time, in call order, with no time limit.
+- `providerId` must match `^[a-z][a-z0-9_]{0,39}$`; `setPurchaseProvider` throws a `TypeError` otherwise.
+- Time limits: when a paywall loads, the native SDK waits up to 10 seconds for `loadProducts` (then the screen follows its unavailable policy) and for `accessState` (then it counts as "cannot say" and the paywall is shown). `purchase` and `restorePurchases` have no time limit, since a store sheet can stay open for minutes.
+
+### RevenueCat reference provider
+
+[`example/src/setgreetRevenueCatProvider.ts`](example/src/setgreetRevenueCatProvider.ts) is a complete provider backed by `react-native-purchases` 10.4.0 or later, the first release whose `trackCustomPaywallImpression` accepts the offering (the example app pins 10.10.2, a release some weeks old, out of supply-chain caution). Copy it into your app: it uses your own `react-native-purchases` dependency, and Setgreet ships none. It keeps packages per source, reports active entitlement ids as access refs, shows trial text only to an eligible user, and reports an "already purchased" refusal as purchased when RevenueCat confirms an active entitlement.
+
+### Platform notes
+
+- **Android:** a flow opens in its own activity, which pauses your React Native activity, and React Native does not run JavaScript timers while it is paused. Provider methods must not depend on `setTimeout` or `setInterval`.
+- **Android:** the store sheet opens from React Native's current activity (your app's), not from the flow's activity. If that activity was destroyed meanwhile, the purchase reports `failed`.
+- **iOS:** nothing beyond `pod install`.
+- Each provider call crosses from the native SDK to JavaScript and back. A call still waiting when the JavaScript context goes away (a reload) fails at once: `purchase` and `restorePurchases` report `failed` with `not_configured`, `loadProducts` errors and `accessState` returns `null`.
+
+### Purchase events
+
+`useFlowEvents` accepts `onPurchaseCompleted`, `onPurchaseCancelled`, `onPurchaseFailed`, `onPurchasePending`, `onRestoreCompleted` and `onRestoreFailed`. Outside React, use `addPurchaseCompletedListener`, `addPurchaseCancelledListener`, `addPurchaseFailedListener`, `addPurchasePendingListener`, `addRestoreCompletedListener` and `addRestoreFailedListener`.
+
+Every purchase event carries `flowId`, `screenId`, `componentId` (the button), `provider` and `timestamp`. Purchase events add `productRef`; `purchaseCompleted` and `restoreCompleted` add `accessRefs`; `restoreCompleted` adds `status` (`restored` or `nothingToRestore`); `purchaseFailed` and `restoreFailed` add `error: { code, providerCode, message }`.
+
+```tsx
+useFlowEvents({
+  onPurchaseCompleted: (event) => {
+    console.log(`Bought ${event.productRef}: ${event.accessRefs.join(', ')}`);
+  },
+  onPurchaseFailed: (event) => {
+    console.log(`Purchase failed: ${event.error.code}`);
+  },
+});
+```
 
 ## External Data in Flows
 

@@ -24,7 +24,7 @@ target 'ReactNativeSetgreetExample' do
   config = use_native_modules!
   
   # Add SetgreetSDK dependency directly
-  pod 'SetgreetSDK', :git => 'https://github.com/setgreet/setgreet-ios-sdk.git', :tag => '1.0.0'
+  pod 'SetgreetSDK', :git => 'https://github.com/setgreet/setgreet-ios-sdk.git', :tag => '1.6.0'
 
   use_react_native!(
     :path => "../node_modules/react-native",

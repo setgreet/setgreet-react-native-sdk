@@ -30,6 +30,19 @@ export interface Spec extends TurboModule {
   // Anonymous ID
   getAnonymousId(): string | null;
 
+  // Purchase providers. The native side registers a proxy provider that
+  // forwards each call to JS as a `SetgreetPurchaseRequest` event; JS answers
+  // request/response calls with `resolvePurchaseRequest`.
+  setPurchaseProvider(
+    providerId: string,
+    defaultSource: { sourceType: string; sourceId: string | null }
+  ): void;
+  resolvePurchaseRequest(
+    requestId: string,
+    result: { [key: string]: unknown } | null,
+    error: { [key: string]: unknown } | null
+  ): void;
+
   // Event Emitter (required for NativeEventEmitter support)
   addListener(eventType: string): void;
   removeListeners(count: number): void;

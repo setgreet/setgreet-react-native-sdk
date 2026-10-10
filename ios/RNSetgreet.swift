@@ -3,9 +3,10 @@ import React
 import SetgreetSDK
 
 @objc(RNSetgreet)
-class RNSetgreet: RCTEventEmitter {
+class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
   private static let eventName = "SetgreetFlowEvent"
   private var hasListeners = false
+  private let purchaseBridge = RNSetgreetPurchaseBridge()
 
   override static func moduleName() -> String! {
     return "RNSetgreet"
@@ -17,15 +18,24 @@ class RNSetgreet: RCTEventEmitter {
   }
 
   override func supportedEvents() -> [String]! {
-    return [RNSetgreet.eventName]
+    return [RNSetgreet.eventName, RNSetgreetPurchaseBridge.requestEventName]
   }
 
   override func startObserving() {
     hasListeners = true
+    purchaseBridge.setListening(true)
   }
 
   override func stopObserving() {
     hasListeners = false
+    purchaseBridge.setListening(false)
+  }
+
+  /// The JS context is going away (reload, teardown): every purchase call
+  /// waiting on JS fails now instead of hanging.
+  override func invalidate() {
+    purchaseBridge.invalidate()
+    super.invalidate()
   }
 
   @objc(initialize:config:)
@@ -65,6 +75,24 @@ class RNSetgreet: RCTEventEmitter {
         }
         .onError { [weak self] event in
           self?.sendFlowEvent(self?.createFlowErrorEvent(event))
+        }
+        .onPurchaseCompleted { [weak self] event in
+          self?.sendFlowEvent(self?.createPurchaseCompletedEvent(event))
+        }
+        .onPurchaseCancelled { [weak self] event in
+          self?.sendFlowEvent(self?.createPurchaseCancelledEvent(event))
+        }
+        .onPurchaseFailed { [weak self] event in
+          self?.sendFlowEvent(self?.createPurchaseFailedEvent(event))
+        }
+        .onPurchasePending { [weak self] event in
+          self?.sendFlowEvent(self?.createPurchasePendingEvent(event))
+        }
+        .onRestoreCompleted { [weak self] event in
+          self?.sendFlowEvent(self?.createRestoreCompletedEvent(event))
+        }
+        .onRestoreFailed { [weak self] event in
+          self?.sendFlowEvent(self?.createRestoreFailedEvent(event))
         }
     }
   }
@@ -153,6 +181,81 @@ class RNSetgreet: RCTEventEmitter {
     ]
   }
 
+  private func createPurchaseCompletedEvent(_ event: PurchaseCompletedEvent) -> [String: Any] {
+    return [
+      "type": "purchaseCompleted",
+      "flowId": event.flowId,
+      "screenId": event.screenId,
+      "componentId": event.componentId,
+      "productRef": event.productRef,
+      "provider": event.provider,
+      "accessRefs": event.accessRefs,
+      "timestamp": event.timestamp * 1000
+    ]
+  }
+
+  private func createPurchaseCancelledEvent(_ event: PurchaseCancelledEvent) -> [String: Any] {
+    return [
+      "type": "purchaseCancelled",
+      "flowId": event.flowId,
+      "screenId": event.screenId,
+      "componentId": event.componentId,
+      "productRef": event.productRef,
+      "provider": event.provider,
+      "timestamp": event.timestamp * 1000
+    ]
+  }
+
+  private func createPurchaseFailedEvent(_ event: PurchaseFailedEvent) -> [String: Any] {
+    return [
+      "type": "purchaseFailed",
+      "flowId": event.flowId,
+      "screenId": event.screenId,
+      "componentId": event.componentId,
+      "productRef": event.productRef,
+      "provider": event.provider,
+      "error": RNSetgreetPurchaseCoding.encode(event.error),
+      "timestamp": event.timestamp * 1000
+    ]
+  }
+
+  private func createPurchasePendingEvent(_ event: PurchasePendingEvent) -> [String: Any] {
+    return [
+      "type": "purchasePending",
+      "flowId": event.flowId,
+      "screenId": event.screenId,
+      "componentId": event.componentId,
+      "productRef": event.productRef,
+      "provider": event.provider,
+      "timestamp": event.timestamp * 1000
+    ]
+  }
+
+  private func createRestoreCompletedEvent(_ event: RestoreCompletedEvent) -> [String: Any] {
+    return [
+      "type": "restoreCompleted",
+      "flowId": event.flowId,
+      "screenId": event.screenId,
+      "componentId": event.componentId,
+      "provider": event.provider,
+      "status": event.status.rawValue,
+      "accessRefs": event.accessRefs,
+      "timestamp": event.timestamp * 1000
+    ]
+  }
+
+  private func createRestoreFailedEvent(_ event: RestoreFailedEvent) -> [String: Any] {
+    return [
+      "type": "restoreFailed",
+      "flowId": event.flowId,
+      "screenId": event.screenId,
+      "componentId": event.componentId,
+      "provider": event.provider,
+      "error": RNSetgreetPurchaseCoding.encode(event.error),
+      "timestamp": event.timestamp * 1000
+    ]
+  }
+
   private func dismissReasonToJsString(_ reason: DismissReason) -> String {
     switch reason {
     case .userClose:
@@ -224,6 +327,37 @@ class RNSetgreet: RCTEventEmitter {
     DispatchQueue.main.async {
       Setgreet.shared.showFlow(flowId: flowId)
     }
+  }
+
+  // MARK: - Purchase Providers
+
+  /// Registers a proxy provider that forwards every call to the JS provider.
+  ///
+  /// Inline, not on the main queue: `identifyUser` / `resetUser` run inline
+  /// on this module's queue and read the registered provider right away, so
+  /// an `identifyUser` that follows `setPurchaseProvider` must find it. The
+  /// SDK's registration is lock-guarded and safe from any thread. Its preload
+  /// still runs after `initialize` (see RNSetgreetPurchaseBridge.swift).
+  @objc(setPurchaseProvider:defaultSource:)
+  func setPurchaseProvider(_ providerId: String, defaultSource: NSDictionary?) {
+    purchaseBridge.attach(sender: self)
+    let provider = RNSetgreetPurchaseProvider(providerId: providerId, bridge: purchaseBridge)
+    let source = RNSetgreetPurchaseCoding.source(from: defaultSource as? [String: Any])
+    Setgreet.shared.setPurchaseProvider(provider, defaultSource: source)
+  }
+
+  /// JS answered a purchase request.
+  @objc(resolvePurchaseRequest:result:error:)
+  func resolvePurchaseRequest(_ requestId: String, result: NSDictionary?, error: NSDictionary?) {
+    purchaseBridge.resolve(
+      requestId: requestId,
+      result: result as? [String: Any],
+      error: error as? [String: Any]
+    )
+  }
+
+  func sendPurchaseRequest(_ body: [String: Any]) {
+    sendEvent(withName: RNSetgreetPurchaseBridge.requestEventName, body: body)
   }
 
   // MARK: - Event Emitter Required Methods

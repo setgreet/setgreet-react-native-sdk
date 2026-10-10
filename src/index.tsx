@@ -15,6 +15,12 @@ export type {
   ActionTriggeredEvent,
   PermissionRequestedEvent,
   FlowErrorEvent,
+  PurchaseCompletedEvent,
+  PurchaseCancelledEvent,
+  PurchaseFailedEvent,
+  PurchasePendingEvent,
+  RestoreCompletedEvent,
+  RestoreFailedEvent,
   SetgreetFlowEvent,
   FlowEventSubscription,
   FlowEventCallbacks,
@@ -30,8 +36,39 @@ export {
   addActionTriggeredListener,
   addPermissionRequestedListener,
   addFlowErrorListener,
+  addPurchaseCompletedListener,
+  addPurchaseCancelledListener,
+  addPurchaseFailedListener,
+  addPurchasePendingListener,
+  addRestoreCompletedListener,
+  addRestoreFailedListener,
   useFlowEvents,
 } from './useFlowEvents';
+
+// Purchase providers (paywalls)
+export type {
+  SetgreetPurchaseSourceType,
+  SetgreetPurchasePeriodUnit,
+  SetgreetPurchasePeriod,
+  SetgreetPurchaseIntroOffer,
+  SetgreetPurchaseProduct,
+  SetgreetPurchaseStatus,
+  SetgreetPurchaseResult,
+  SetgreetRestoreStatus,
+  SetgreetRestoreResult,
+  SetgreetPurchaseAccessState,
+  SetgreetPurchaseErrorCode,
+  SetgreetPurchaseError,
+  SetgreetPaywallImpressionContext,
+  SetgreetPurchaseProvider,
+  SetPurchaseProviderOptions,
+} from './purchaseTypes';
+export {
+  SetgreetPurchaseSource,
+  isSetgreetPurchaseErrorCode,
+  purchaseError,
+} from './purchaseTypes';
+export { setPurchaseProvider } from './purchases';
 
 // Re-export theme types and sync function
 export type {
