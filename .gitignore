@@ -17,6 +17,10 @@ Pods/
 /local.properties
 /.idea
 /android/app/build/
+# Debug builds load JS from Metro and release builds bundle it themselves, so
+# a bundle committed here only goes stale (one hid for months that debug builds
+# could not reach Metro).
+/example/android/app/src/main/assets/index.android.bundle
 
 # Misc
 coverage/
