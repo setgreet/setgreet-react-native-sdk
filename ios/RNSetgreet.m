@@ -21,6 +21,10 @@ RCT_EXTERN_METHOD(trackScreen:(NSString *)screenName
 
 RCT_EXTERN_METHOD(showFlow:(NSString *)flowId)
 
+// Synchronous: returns the value to JS. A sync method must return an object
+// (`id`), which the Swift `String?` is (`NSString *`, nil = null).
+RCT_EXTERN__BLOCKING_SYNCHRONOUS_METHOD(getAnonymousId)
+
 RCT_EXTERN_METHOD(setPurchaseProvider:(NSString *)providerId
                   defaultSource:(NSDictionary *)defaultSource)
 
