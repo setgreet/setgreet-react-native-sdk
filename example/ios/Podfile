@@ -58,6 +58,18 @@ target 'ReactNativeSetgreetExample' do
           config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
         end
       end
+
+      # Xcode 27 (Apple clang 21) rejects the consteval format-string checks in
+      # fmt 11.0.2's own src/format.cc, which React Native 0.79 bundles. fmt
+      # turns those checks on only from C++20, so build just the fmt pod as
+      # C++17 (overriding the C++20 react_native_post_install sets above). A
+      # -DFMT_USE_CONSTEVAL=0 does not work: fmt's base.h redefines it. Drop
+      # this once the app is on a React Native with a newer fmt.
+      if target.name == 'fmt'
+        target.build_configurations.each do |config|
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        end
+      end
     end
   end
 end
