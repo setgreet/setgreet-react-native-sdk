@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		24F9E8FC732C7C007E942BDB /* Pods_ReactNativeSetgreetExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6AC4DDB3ECDDEADEE90794BE /* Pods_ReactNativeSetgreetExample.framework */; };
 		26C6F25759CEA6C793CE4A44 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9062DD492E567C4100C00116 /* PrivacyInfo.xcprivacy */; };
+		7A2D37515326422508B05B97 /* libPods-ReactNativeSetgreetExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F13022619DF8FAB052E356A5 /* libPods-ReactNativeSetgreetExample.a */; };
 		9062DD4A2E567C4100C00117 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9062DD452E567C4100C00116 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -17,7 +17,6 @@
 		3B4392A12AC88292D35C810B /* Pods-ReactNativeSetgreetExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeSetgreetExample.debug.xcconfig"; path = "Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample.debug.xcconfig"; sourceTree = "<group>"; };
 		438502BF452A9A58D15D7902 /* Pods-ReactNativeSetgreetExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeSetgreetExample.release.xcconfig"; path = "Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample.release.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-ReactNativeSetgreetExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeSetgreetExample.release.xcconfig"; path = "Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample.release.xcconfig"; sourceTree = "<group>"; };
-		6AC4DDB3ECDDEADEE90794BE /* Pods_ReactNativeSetgreetExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ReactNativeSetgreetExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9062DD452E567C4100C00116 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ReactNativeSetgreetExample/AppDelegate.swift; sourceTree = "<group>"; };
 		9062DD462E567C4100C00116 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ReactNativeSetgreetExample/Images.xcassets; sourceTree = "<group>"; };
 		9062DD472E567C4100C00116 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = ReactNativeSetgreetExample/Info.plist; sourceTree = "<group>"; };
@@ -25,6 +24,7 @@
 		9062DD492E567C4100C00116 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ReactNativeSetgreetExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		95836CAD50B3A52F4184AA2D /* Pods-ReactNativeSetgreetExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeSetgreetExample.debug.xcconfig"; path = "Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F13022619DF8FAB052E356A5 /* libPods-ReactNativeSetgreetExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactNativeSetgreetExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,7 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				24F9E8FC732C7C007E942BDB /* Pods_ReactNativeSetgreetExample.framework in Frameworks */,
+				7A2D37515326422508B05B97 /* libPods-ReactNativeSetgreetExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,7 +55,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				6AC4DDB3ECDDEADEE90794BE /* Pods_ReactNativeSetgreetExample.framework */,
+				F13022619DF8FAB052E356A5 /* libPods-ReactNativeSetgreetExample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
