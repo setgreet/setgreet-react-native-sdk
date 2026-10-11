@@ -1,41 +1,40 @@
 import Foundation
-import React
 import SetgreetSDK
 
-@objc(RNSetgreet)
-class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
+/// The module's logic. `RNSetgreet.mm` is the React Native module, under both
+/// architectures: it owns one instance, forwards every JS call to it and
+/// emits the events it produces (an `RCTEventEmitter`, so `NativeEventEmitter`
+/// subscriptions work unchanged).
+@objc(RNSetgreetImpl)
+public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
   private static let eventName = "SetgreetFlowEvent"
+
+  /// The events the module emits: flow events and purchase requests.
+  @objc public static let supportedEvents = [eventName, RNSetgreetPurchaseBridge.requestEventName]
+
+  private let emit: (String, [String: Any]) -> Void
   private var hasListeners = false
   private let purchaseBridge = RNSetgreetPurchaseBridge()
 
-  override static func moduleName() -> String! {
-    return "RNSetgreet"
+  /// - Parameter emitter: Sends an event (name, body) to JS.
+  @objc public init(emitter: @escaping (String, [String: Any]) -> Void) {
+    emit = emitter
+    super.init()
   }
 
-  @objc
-  override static func requiresMainQueueSetup() -> Bool {
-    return false
-  }
-
-  override func supportedEvents() -> [String]! {
-    return [RNSetgreet.eventName, RNSetgreetPurchaseBridge.requestEventName]
-  }
-
-  override func startObserving() {
-    hasListeners = true
-    purchaseBridge.setListening(true)
-  }
-
-  override func stopObserving() {
-    hasListeners = false
-    purchaseBridge.setListening(false)
+  /// Whether JS listens for the module's events (the module's
+  /// `startObserving` / `stopObserving`).
+  @objc(setListening:)
+  public func setListening(_ listening: Bool) {
+    hasListeners = listening
+    purchaseBridge.setListening(listening)
   }
 
   /// The JS context is going away (reload, teardown): every purchase call
   /// waiting on JS fails now instead of hanging.
-  override func invalidate() {
+  @objc
+  public func invalidate() {
     purchaseBridge.invalidate()
-    super.invalidate()
   }
 
   /// Hands `initialize` to the SDK on the main queue. Every call that needs an
@@ -45,7 +44,7 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
   /// the SDK treats as a fatal error. `setPurchaseProvider` stays inline (see
   /// there).
   @objc(initialize:config:)
-  func initialize(appKey: String, config: NSDictionary?) {
+  public func initialize(appKey: String, config: NSDictionary?) {
     let debug = (config?["debugMode"] as? Bool) ?? false
 
     DispatchQueue.main.async { [weak self] in
@@ -105,7 +104,7 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
 
   private func sendFlowEvent(_ body: [String: Any]?) {
     guard hasListeners, let body = body else { return }
-    sendEvent(withName: RNSetgreet.eventName, body: body)
+    emit(RNSetgreetImpl.eventName, body)
   }
 
   private func createFlowStartedEvent(_ event: FlowStartedEvent) -> [String: Any] {
@@ -297,7 +296,7 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
   }
 
   @objc(getAnonymousId)
-  func getAnonymousId() -> String? {
+  public func getAnonymousId() -> String? {
     return Setgreet.shared.anonymousId
   }
 
@@ -305,7 +304,7 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
   // run on the main queue, behind `initialize` (see there).
 
   @objc(identifyUser:attributes:operation:locale:)
-  func identifyUser(userId: String, attributes: NSDictionary?, operation: String?, locale: String?) {
+  public func identifyUser(userId: String, attributes: NSDictionary?, operation: String?, locale: String?) {
     let op: SetgreetSDK.Operation = (operation?.lowercased() == "update") ? .update : .create
     let userAttributes = attributes as? [String: Any]
 
@@ -320,14 +319,14 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
   }
 
   @objc(resetUser)
-  func resetUser() {
+  public func resetUser() {
     DispatchQueue.main.async {
       Setgreet.shared.resetUser()
     }
   }
 
   @objc(trackEvent:properties:)
-  func trackEvent(eventName: String, properties: NSDictionary?) {
+  public func trackEvent(eventName: String, properties: NSDictionary?) {
     let eventProperties = properties as? [String: Any]
 
     DispatchQueue.main.async {
@@ -336,7 +335,7 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
   }
 
   @objc(trackScreen:properties:)
-  func trackScreen(screenName: String, properties: NSDictionary?) {
+  public func trackScreen(screenName: String, properties: NSDictionary?) {
     let screenProperties = properties as? [String: Any]
 
     DispatchQueue.main.async {
@@ -345,7 +344,7 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
   }
 
   @objc(showFlow:)
-  func showFlow(flowId: String) {
+  public func showFlow(flowId: String) {
     DispatchQueue.main.async {
       Setgreet.shared.showFlow(flowId: flowId)
     }
@@ -361,7 +360,7 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
   /// lock-guarded and safe from any thread. Its preload still runs after
   /// `initialize` (see RNSetgreetPurchaseBridge.swift).
   @objc(setPurchaseProvider:defaultSource:)
-  func setPurchaseProvider(_ providerId: String, defaultSource: NSDictionary?) {
+  public func setPurchaseProvider(_ providerId: String, defaultSource: NSDictionary?) {
     purchaseBridge.attach(sender: self)
     let provider = RNSetgreetPurchaseProvider(providerId: providerId, bridge: purchaseBridge)
     let source = RNSetgreetPurchaseCoding.source(from: defaultSource as? [String: Any])
@@ -370,7 +369,7 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
 
   /// JS answered a purchase request.
   @objc(resolvePurchaseRequest:result:error:)
-  func resolvePurchaseRequest(_ requestId: String, result: NSDictionary?, error: NSDictionary?) {
+  public func resolvePurchaseRequest(_ requestId: String, result: NSDictionary?, error: NSDictionary?) {
     purchaseBridge.resolve(
       requestId: requestId,
       result: result as? [String: Any],
@@ -379,17 +378,6 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
   }
 
   func sendPurchaseRequest(_ body: [String: Any]) {
-    sendEvent(withName: RNSetgreetPurchaseBridge.requestEventName, body: body)
-  }
-
-  // MARK: - Event Emitter Required Methods
-  @objc(addListener:)
-  override func addListener(_ eventName: String) {
-    super.addListener(eventName)
-  }
-
-  @objc(removeListeners:)
-  override func removeListeners(_ count: Double) {
-    super.removeListeners(count)
+    emit(RNSetgreetPurchaseBridge.requestEventName, body)
   }
 }

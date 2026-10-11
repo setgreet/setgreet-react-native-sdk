@@ -7,7 +7,6 @@ import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableMapKeySetIterator
 import com.facebook.react.bridge.ReadableType
-import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.setgreet.Setgreet
 import com.setgreet.listener.DismissReason
 import com.setgreet.listener.ErrorType
@@ -132,11 +131,11 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
   private fun sendEvent(params: WritableMap) {
     // Flow and purchase outcome events can fire after the flow was dismissed
     // or the JS context was torn down (a purchase outlives both).
+    // hasActiveReactInstance() and emitDeviceEvent() serve both architectures
+    // (the bridge, or the bridgeless React host).
     if (!reactApplicationContext.hasActiveReactInstance()) return
     try {
-      reactApplicationContext
-        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-        .emit(EVENT_NAME, params)
+      reactApplicationContext.emitDeviceEvent(EVENT_NAME, params)
     } catch (e: RuntimeException) {
       // The React instance went away between the check and the emit.
     }
@@ -366,9 +365,10 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
   private fun emitPurchaseRequest(body: Map<String, Any?>): Boolean {
     if (!reactApplicationContext.hasActiveReactInstance()) return false
     return try {
-      reactApplicationContext
-        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-        .emit(RNSetgreetPurchaseBridge.REQUEST_EVENT_NAME, Arguments.makeNativeMap(body))
+      reactApplicationContext.emitDeviceEvent(
+        RNSetgreetPurchaseBridge.REQUEST_EVENT_NAME,
+        Arguments.makeNativeMap(body)
+      )
       true
     } catch (e: RuntimeException) {
       false
