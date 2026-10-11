@@ -2,8 +2,14 @@ import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
 export interface Spec extends TurboModule {
-  // Initialization
-  initialize(appKey: string, config: { debugMode: boolean } | null): void;
+  // Object parameters are untyped (`{ [key: string]: unknown }`) on purpose:
+  // codegen turns a typed object into a C++ struct on iOS, while an untyped
+  // one arrives as a plain dictionary on both platforms (NSDictionary,
+  // ReadableMap), so one Objective-C++ method serves both architectures.
+  // Their shapes are noted per method.
+
+  // Initialization. `config`: `{ debugMode: boolean }`.
+  initialize(appKey: string, config: { [key: string]: unknown } | null): void;
 
   // User
   identifyUser(
@@ -33,9 +39,10 @@ export interface Spec extends TurboModule {
   // Purchase providers. The native side registers a proxy provider that
   // forwards each call to JS as a `SetgreetPurchaseRequest` event; JS answers
   // request/response calls with `resolvePurchaseRequest`.
+  // `defaultSource`: `{ sourceType: string; sourceId: string | null }`.
   setPurchaseProvider(
     providerId: string,
-    defaultSource: { sourceType: string; sourceId: string | null }
+    defaultSource: { [key: string]: unknown }
   ): void;
   resolvePurchaseRequest(
     requestId: string,

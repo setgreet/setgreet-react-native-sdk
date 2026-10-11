@@ -6,9 +6,10 @@ Setgreet React Native SDK allows you to show Setgreet flows in your React Native
 
 ## Requirements
 
-- React Native 0.60.0 and above
+- React Native 0.74.0 and above
 - iOS 15.0+ (for iOS apps)
 - Android 6.0 (API level 23) and above (for Android apps)
+- Either React Native architecture: the New Architecture (the SDK is a TurboModule) or the old one (bridge). Nothing to configure; it follows your app.
 
 ## Installation
 

@@ -13,12 +13,22 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => "15.0" }
   s.source       = { :git => "https://github.com/setgreet/setgreet-react-native-sdk.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{swift,m,h}"
-  
+  s.source_files = "ios/**/*.{h,m,mm,swift,cpp}"
+  # The Objective-C++ module header imports the codegen spec (C++), so it must
+  # stay out of the umbrella header the Swift sources compile against.
+  s.private_header_files = "ios/**/*.h"
+
   s.swift_version = '5.0'
   s.ios.frameworks = 'UIKit'
 
   # SetgreetSDK dependency - this will be resolved by the main app's Podfile
   s.dependency 'SetgreetSDK', '1.6.0'
-  s.dependency 'React-Core'
+
+  # React Native's helper: React-Core, the codegen spec and, under the New
+  # Architecture, RCT_NEW_ARCH_ENABLED. Older React Native versions lack it.
+  if respond_to?(:install_modules_dependencies, true)
+    install_modules_dependencies(s)
+  else
+    s.dependency 'React-Core'
+  end
 end
