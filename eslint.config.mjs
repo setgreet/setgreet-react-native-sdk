@@ -24,6 +24,8 @@ export default defineConfig([
     },
   },
   {
-    ignores: ['node_modules/', 'lib/'],
+    // `**/build/`: build output, such as the HTML report Gradle writes for the
+    // Android unit tests (android/build/reports/tests/.../report.js).
+    ignores: ['node_modules/', 'lib/', '**/build/'],
   },
 ]);

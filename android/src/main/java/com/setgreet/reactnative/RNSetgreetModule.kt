@@ -29,7 +29,7 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
     override fun canReachJs(): Boolean =
       listenerCount > 0 && reactApplicationContext.hasActiveReactInstance()
 
-    override fun emitRequest(body: WritableMap): Boolean = emitPurchaseRequest(body)
+    override fun emitRequest(body: Map<String, Any?>): Boolean = emitPurchaseRequest(body)
   }
 
   override fun getName(): String {
@@ -222,7 +222,7 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
       putString("componentId", event.componentId)
       putString("productRef", event.productRef)
       putString("provider", event.provider)
-      putMap("error", RNSetgreetPurchaseCoding.encode(event.error))
+      putMap("error", Arguments.makeNativeMap(RNSetgreetPurchaseCoding.encode(event.error)))
       putDouble("timestamp", event.timestamp.toDouble())
     }
   }
@@ -259,7 +259,7 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
       putString("screenId", event.screenId)
       putString("componentId", event.componentId)
       putString("provider", event.provider)
-      putMap("error", RNSetgreetPurchaseCoding.encode(event.error))
+      putMap("error", Arguments.makeNativeMap(RNSetgreetPurchaseCoding.encode(event.error)))
       putDouble("timestamp", event.timestamp.toDouble())
     }
   }
@@ -331,12 +331,13 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
     super.invalidate()
   }
 
-  private fun emitPurchaseRequest(body: WritableMap): Boolean {
+  /** Emits a bridge request, converting its plain Kotlin map for React Native. */
+  private fun emitPurchaseRequest(body: Map<String, Any?>): Boolean {
     if (!reactApplicationContext.hasActiveReactInstance()) return false
     return try {
       reactApplicationContext
         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-        .emit(RNSetgreetPurchaseBridge.REQUEST_EVENT_NAME, body)
+        .emit(RNSetgreetPurchaseBridge.REQUEST_EVENT_NAME, Arguments.makeNativeMap(body))
       true
     } catch (e: RuntimeException) {
       false

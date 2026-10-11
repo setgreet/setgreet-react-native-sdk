@@ -77,6 +77,9 @@ dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation "com.setgreet:setgreet:1.6.0"
+
+  // Plain JVM tests of the purchase bridge (no Robolectric, no Mockito).
+  testImplementation "junit:junit:4.13.2"
 }
 
 react {

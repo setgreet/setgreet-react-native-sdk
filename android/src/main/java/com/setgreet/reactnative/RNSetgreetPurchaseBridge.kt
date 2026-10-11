@@ -1,10 +1,6 @@
 package com.setgreet.reactnative
 
 import android.app.Activity
-import android.os.Handler
-import android.os.Looper
-import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.WritableMap
 import com.setgreet.purchases.SetgreetPaywallImpressionContext
 import com.setgreet.purchases.SetgreetPurchaseAccessState
 import com.setgreet.purchases.SetgreetPurchaseError
@@ -48,10 +44,18 @@ import kotlin.coroutines.suspendCoroutine
  * [Sender] (the module) weakly and drops it on [invalidate], so an old React
  * context is never kept alive by it.
  *
+ * Requests are plain Kotlin maps (strings, numbers, booleans, nulls, lists and
+ * nested maps); the module turns them into React Native maps when it emits
+ * them. With the [RNSetgreetScheduler] injected, nothing here needs Android or
+ * React Native at run time, so the bridge is unit-tested on the plain JVM.
+ *
  * Only Kotlin's own coroutine primitives are used: kotlinx-coroutines is not on
  * this module's compile classpath (the native SDK ships it at runtime only).
  */
-internal class RNSetgreetPurchaseBridge {
+internal class RNSetgreetPurchaseBridge(
+  /** Runs the timeouts; the main thread in production. */
+  private val scheduler: RNSetgreetScheduler = RNSetgreetMainThreadScheduler
+) {
 
   /** The module side: whether JS can be reached, and how to emit a request. */
   interface Sender {
@@ -59,7 +63,7 @@ internal class RNSetgreetPurchaseBridge {
     fun canReachJs(): Boolean
 
     /** Emits a `SetgreetPurchaseRequest` event; false when it could not be sent. */
-    fun emitRequest(body: WritableMap): Boolean
+    fun emitRequest(body: Map<String, Any?>): Boolean
   }
 
   sealed class Answer {
@@ -71,7 +75,6 @@ internal class RNSetgreetPurchaseBridge {
 
   private val pending = ConcurrentHashMap<String, Continuation<Answer>>()
   private val timeouts = ConcurrentHashMap<String, Runnable>()
-  private val handler = Handler(Looper.getMainLooper())
 
   @Volatile
   private var invalidated = false
@@ -92,7 +95,7 @@ internal class RNSetgreetPurchaseBridge {
    * Sends a request and suspends until JS answers, or until [timeoutMs] when
    * set. Never throws; the caller maps the [Answer].
    */
-  suspend fun request(method: String, args: WritableMap, timeoutMs: Long?): Answer =
+  suspend fun request(method: String, args: Map<String, Any?>, timeoutMs: Long?): Answer =
     suspendCoroutine { continuation ->
       val target = reachableSender()
       if (target == null) {
@@ -104,7 +107,7 @@ internal class RNSetgreetPurchaseBridge {
       if (timeoutMs != null) {
         val timeout = Runnable { settle(requestId, Answer.TimedOut) }
         timeouts[requestId] = timeout
-        handler.postDelayed(timeout, timeoutMs)
+        scheduler.postDelayed(timeout, timeoutMs)
       }
       // Re-checked after the entry is in: an invalidate() that ran meanwhile
       // swept the map before this request was in it.
@@ -114,7 +117,7 @@ internal class RNSetgreetPurchaseBridge {
     }
 
   /** Sends a fire-and-forget request; dropped when no JS listens. */
-  fun notify(method: String, args: WritableMap) {
+  fun notify(method: String, args: Map<String, Any?>) {
     reachableSender()?.emitRequest(requestBody(null, method, args))
   }
 
@@ -140,16 +143,12 @@ internal class RNSetgreetPurchaseBridge {
 
   private fun settle(requestId: String, answer: Answer) {
     val continuation = pending.remove(requestId) ?: return
-    timeouts.remove(requestId)?.let { handler.removeCallbacks(it) }
+    timeouts.remove(requestId)?.let { scheduler.cancel(it) }
     continuation.resume(answer)
   }
 
-  private fun requestBody(requestId: String?, method: String, args: WritableMap): WritableMap =
-    Arguments.createMap().apply {
-      if (requestId != null) putString("requestId", requestId) else putNull("requestId")
-      putString("method", method)
-      putMap("args", args)
-    }
+  private fun requestBody(requestId: String?, method: String, args: Map<String, Any?>): Map<String, Any?> =
+    mapOf("requestId" to requestId, "method" to method, "args" to args)
 
   companion object {
     const val REQUEST_EVENT_NAME = "SetgreetPurchaseRequest"
@@ -174,11 +173,14 @@ internal class RNSetgreetPurchaseBridge {
       message = "The JavaScript purchase provider is unavailable"
     )
 
-    fun timeoutError(method: String) = SetgreetPurchaseError(
-      code = SetgreetPurchaseErrorCode.NETWORK_ERROR,
-      providerCode = "timeout",
-      message = "The JavaScript provider's $method did not answer within ${SAFETY_TIMEOUT_MS / 1000}s"
-    )
+    fun timeoutError(method: String, timeoutMs: Long = SAFETY_TIMEOUT_MS): SetgreetPurchaseError {
+      val limit = if (timeoutMs % 1000 == 0L) "${timeoutMs / 1000}s" else "${timeoutMs}ms"
+      return SetgreetPurchaseError(
+        code = SetgreetPurchaseErrorCode.NETWORK_ERROR,
+        providerCode = "timeout",
+        message = "The JavaScript provider's $method did not answer within $limit"
+      )
+    }
   }
 }
 
@@ -189,16 +191,19 @@ internal class RNSetgreetPurchaseBridge {
  */
 internal class RNSetgreetPurchaseProvider(
   override val providerId: String,
-  private val bridge: RNSetgreetPurchaseBridge
+  private val bridge: RNSetgreetPurchaseBridge,
+  /** How long `loadProducts` and `accessState` wait for JS at most. */
+  private val safetyTimeoutMs: Long = RNSetgreetPurchaseBridge.SAFETY_TIMEOUT_MS
 ) : SetgreetPurchaseProvider {
 
   override suspend fun loadProducts(source: SetgreetPurchaseSource): List<SetgreetPurchaseProduct> {
-    val args = Arguments.createMap().apply { putMap("source", RNSetgreetPurchaseCoding.encode(source)) }
-    return when (val answer = bridge.request("loadProducts", args, RNSetgreetPurchaseBridge.SAFETY_TIMEOUT_MS)) {
+    val args = mapOf("source" to RNSetgreetPurchaseCoding.encode(source))
+    return when (val answer = bridge.request("loadProducts", args, safetyTimeoutMs)) {
       is RNSetgreetPurchaseBridge.Answer.Result -> RNSetgreetPurchaseCoding.products(answer.values["products"])
       is RNSetgreetPurchaseBridge.Answer.Failure -> throw answer.error
       RNSetgreetPurchaseBridge.Answer.Unavailable -> throw RNSetgreetPurchaseBridge.unavailableError()
-      RNSetgreetPurchaseBridge.Answer.TimedOut -> throw RNSetgreetPurchaseBridge.timeoutError("loadProducts")
+      RNSetgreetPurchaseBridge.Answer.TimedOut ->
+        throw RNSetgreetPurchaseBridge.timeoutError("loadProducts", safetyTimeoutMs)
     }
   }
 
@@ -208,11 +213,11 @@ internal class RNSetgreetPurchaseProvider(
     activity: Activity,
     productRef: String,
     source: SetgreetPurchaseSource
-  ): SetgreetPurchaseResult {
-    val args = Arguments.createMap().apply {
-      putString("productRef", productRef)
-      putMap("source", RNSetgreetPurchaseCoding.encode(source))
-    }
+  ): SetgreetPurchaseResult = requestPurchase(productRef, source)
+
+  /** [purchase] without the Activity it never forwards (unit tests have none). */
+  internal suspend fun requestPurchase(productRef: String, source: SetgreetPurchaseSource): SetgreetPurchaseResult {
+    val args = mapOf("productRef" to productRef, "source" to RNSetgreetPurchaseCoding.encode(source))
     return when (val answer = bridge.request("purchase", args, timeoutMs = null)) {
       is RNSetgreetPurchaseBridge.Answer.Result -> RNSetgreetPurchaseCoding.purchaseResult(answer.values, productRef)
       is RNSetgreetPurchaseBridge.Answer.Failure ->
@@ -223,7 +228,7 @@ internal class RNSetgreetPurchaseProvider(
   }
 
   override suspend fun restorePurchases(): SetgreetRestoreResult =
-    when (val answer = bridge.request("restorePurchases", Arguments.createMap(), timeoutMs = null)) {
+    when (val answer = bridge.request("restorePurchases", emptyMap(), timeoutMs = null)) {
       is RNSetgreetPurchaseBridge.Answer.Result -> RNSetgreetPurchaseCoding.restoreResult(answer.values)
       is RNSetgreetPurchaseBridge.Answer.Failure ->
         SetgreetRestoreResult(SetgreetRestoreStatus.FAILED, error = answer.error)
@@ -232,7 +237,7 @@ internal class RNSetgreetPurchaseProvider(
     }
 
   override suspend fun accessState(): SetgreetPurchaseAccessState? {
-    val answer = bridge.request("accessState", Arguments.createMap(), RNSetgreetPurchaseBridge.SAFETY_TIMEOUT_MS)
+    val answer = bridge.request("accessState", emptyMap(), safetyTimeoutMs)
     return if (answer is RNSetgreetPurchaseBridge.Answer.Result) {
       RNSetgreetPurchaseCoding.accessState(answer.values["accessState"])
     } else {
@@ -241,59 +246,50 @@ internal class RNSetgreetPurchaseProvider(
   }
 
   override fun trackPaywallImpression(context: SetgreetPaywallImpressionContext) {
-    val args = Arguments.createMap().apply { putMap("context", RNSetgreetPurchaseCoding.encode(context)) }
-    bridge.notify("trackPaywallImpression", args)
+    bridge.notify("trackPaywallImpression", mapOf("context" to RNSetgreetPurchaseCoding.encode(context)))
   }
 
   override fun setAttributes(attributes: Map<String, String>) {
-    val args = Arguments.createMap().apply {
-      putMap("attributes", Arguments.createMap().apply { attributes.forEach { (key, value) -> putString(key, value) } })
-    }
-    bridge.notify("setAttributes", args)
+    bridge.notify("setAttributes", mapOf("attributes" to attributes.toMap()))
   }
 
   // No time limit: the SDK runs `identify` / `reset` one after another.
   override suspend fun identify(userId: String) {
-    val args = Arguments.createMap().apply { putString("userId", userId) }
-    bridge.request("identify", args, timeoutMs = null)
+    bridge.request("identify", mapOf("userId" to userId), timeoutMs = null)
   }
 
   override suspend fun reset() {
-    bridge.request("reset", Arguments.createMap(), timeoutMs = null)
+    bridge.request("reset", emptyMap(), timeoutMs = null)
   }
 }
 
 /**
- * Converts between the native purchase models and the JS bridge values. What
- * JS sends (read through `ReadableMap.toHashMap()`: numbers are `Double`,
- * objects `Map`, arrays `List`) is validated defensively: a product without a
- * `ref` or a numeric `priceAmount` is dropped, an unknown status is `FAILED`,
- * an unknown error code is `UNKNOWN`, a missing array is empty.
+ * Converts between the native purchase models and the JS bridge values, as
+ * plain Kotlin maps (the module converts them for React Native). What JS sends
+ * (read through `ReadableMap.toHashMap()`: numbers are `Double`, objects `Map`,
+ * arrays `List`) is validated defensively: a product without a `ref` or a
+ * numeric `priceAmount` is dropped, an unknown status is `FAILED`, an unknown
+ * error code is `UNKNOWN`, a missing array is empty.
  */
 internal object RNSetgreetPurchaseCoding {
 
   // Native → JS
 
-  fun encode(source: SetgreetPurchaseSource): WritableMap = Arguments.createMap().apply {
-    putString("sourceType", source.sourceType)
-    val sourceId = source.sourceId
-    if (sourceId != null) putString("sourceId", sourceId) else putNull("sourceId")
-  }
+  fun encode(source: SetgreetPurchaseSource): Map<String, Any?> =
+    mapOf("sourceType" to source.sourceType, "sourceId" to source.sourceId)
 
-  fun encode(context: SetgreetPaywallImpressionContext): WritableMap = Arguments.createMap().apply {
-    putString("flowId", context.flowId)
-    putString("screenId", context.screenId)
-    putMap("source", encode(context.source))
-    putArray("productRefs", Arguments.createArray().apply { context.productRefs.forEach { pushString(it) } })
-  }
+  fun encode(context: SetgreetPaywallImpressionContext): Map<String, Any?> = mapOf(
+    "flowId" to context.flowId,
+    "screenId" to context.screenId,
+    "source" to encode(context.source),
+    "productRefs" to context.productRefs.toList()
+  )
 
-  fun encode(error: SetgreetPurchaseError): WritableMap = Arguments.createMap().apply {
-    putString("code", error.code.rawValue)
-    val providerCode = error.providerCode
-    if (providerCode != null) putString("providerCode", providerCode) else putNull("providerCode")
-    val message = error.message
-    if (message != null) putString("message", message) else putNull("message")
-  }
+  fun encode(error: SetgreetPurchaseError): Map<String, Any?> = mapOf(
+    "code" to error.code.rawValue,
+    "providerCode" to error.providerCode,
+    "message" to error.message
+  )
 
   // JS → native
 
@@ -363,7 +359,7 @@ internal object RNSetgreetPurchaseCoding {
       ?: SetgreetPurchaseErrorCode.UNKNOWN
     return SetgreetPurchaseError(
       code = code,
-      providerCode = values["providerCode"] as? String,
+      providerCode = codeString(values["providerCode"]),
       message = values["message"] as? String
     )
   }
@@ -389,6 +385,19 @@ internal object RNSetgreetPurchaseCoding {
   }
 
   private fun nonEmptyString(value: Any?): String? = (value as? String)?.takeIf { it.isNotEmpty() }
+
+  /** A vendor code as a string; a number (JS sends every number as a double) loses a `.0`. */
+  private fun codeString(value: Any?): String? = when (value) {
+    is String -> value
+    is Double -> when {
+      !value.isFinite() -> null
+      value == Math.rint(value) && Math.abs(value) < 1e15 -> value.toLong().toString()
+      else -> value.toString()
+    }
+    is Float -> codeString(value.toDouble())
+    is Int, is Long -> value.toString()
+    else -> null
+  }
 
   private fun strings(value: Any?): List<String> = (value as? List<*>)?.filterIsInstance<String>() ?: emptyList()
 
