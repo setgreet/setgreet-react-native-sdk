@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		24F9E8FC732C7C007E942BDB /* Pods_ReactNativeSetgreetExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6AC4DDB3ECDDEADEE90794BE /* Pods_ReactNativeSetgreetExample.framework */; };
 		26C6F25759CEA6C793CE4A44 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9062DD492E567C4100C00116 /* PrivacyInfo.xcprivacy */; };
-		2936187F61ED846D7266E04E /* libPods-ReactNativeSetgreetExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8ACB661295ABDB55AF96EC26 /* libPods-ReactNativeSetgreetExample.a */; };
 		9062DD4A2E567C4100C00117 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9062DD452E567C4100C00116 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -17,7 +17,7 @@
 		3B4392A12AC88292D35C810B /* Pods-ReactNativeSetgreetExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeSetgreetExample.debug.xcconfig"; path = "Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample.debug.xcconfig"; sourceTree = "<group>"; };
 		438502BF452A9A58D15D7902 /* Pods-ReactNativeSetgreetExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeSetgreetExample.release.xcconfig"; path = "Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample.release.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-ReactNativeSetgreetExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeSetgreetExample.release.xcconfig"; path = "Target Support Files/Pods-ReactNativeSetgreetExample/Pods-ReactNativeSetgreetExample.release.xcconfig"; sourceTree = "<group>"; };
-		8ACB661295ABDB55AF96EC26 /* libPods-ReactNativeSetgreetExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactNativeSetgreetExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6AC4DDB3ECDDEADEE90794BE /* Pods_ReactNativeSetgreetExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ReactNativeSetgreetExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9062DD452E567C4100C00116 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ReactNativeSetgreetExample/AppDelegate.swift; sourceTree = "<group>"; };
 		9062DD462E567C4100C00116 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ReactNativeSetgreetExample/Images.xcassets; sourceTree = "<group>"; };
 		9062DD472E567C4100C00116 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = ReactNativeSetgreetExample/Info.plist; sourceTree = "<group>"; };
@@ -32,7 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2936187F61ED846D7266E04E /* libPods-ReactNativeSetgreetExample.a in Frameworks */,
+				24F9E8FC732C7C007E942BDB /* Pods_ReactNativeSetgreetExample.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,7 +55,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				8ACB661295ABDB55AF96EC26 /* libPods-ReactNativeSetgreetExample.a */,
+				6AC4DDB3ECDDEADEE90794BE /* Pods_ReactNativeSetgreetExample.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -356,6 +356,17 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
@@ -429,6 +440,17 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers/react/nativemodule/core",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,

@@ -21,6 +21,13 @@ RCT_EXTERN_METHOD(trackScreen:(NSString *)screenName
 
 RCT_EXTERN_METHOD(showFlow:(NSString *)flowId)
 
+RCT_EXTERN_METHOD(setPurchaseProvider:(NSString *)providerId
+                  defaultSource:(NSDictionary *)defaultSource)
+
+RCT_EXTERN_METHOD(resolvePurchaseRequest:(NSString *)requestId
+                  result:(NSDictionary *)result
+                  error:(NSDictionary *)error)
+
 RCT_EXTERN_METHOD(addListener:(NSString *)eventName)
 
 RCT_EXTERN_METHOD(removeListeners:(double)count)

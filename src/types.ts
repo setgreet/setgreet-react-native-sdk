@@ -1,3 +1,8 @@
+import type {
+  SetgreetPurchaseError,
+  SetgreetRestoreStatus,
+} from './purchaseTypes';
+
 // Dismiss reasons for flow dismissal
 export type DismissReason =
   | 'userClose'
@@ -38,6 +43,8 @@ export type ActionType =
   | 'open_settings'
   | 'track_event'
   | 'custom'
+  | 'purchase'
+  | 'restore_purchases'
   | 'none';
 
 // Permission types
@@ -122,6 +129,81 @@ export interface PermissionRequestedEvent {
   timestamp: number;
 }
 
+// Purchase events (purchase providers). `provider` is the registered
+// provider's `providerId`; `componentId` is the purchase or restore button.
+
+/** A purchase through the registered purchase provider succeeded. */
+export interface PurchaseCompletedEvent {
+  type: 'purchaseCompleted';
+  flowId: string;
+  screenId: string;
+  componentId: string;
+  productRef: string;
+  provider: string;
+  /** The access (entitlement) refs the user now holds. */
+  accessRefs: string[];
+  timestamp: number;
+}
+
+/** The user cancelled a purchase. */
+export interface PurchaseCancelledEvent {
+  type: 'purchaseCancelled';
+  flowId: string;
+  screenId: string;
+  componentId: string;
+  productRef: string;
+  provider: string;
+  timestamp: number;
+}
+
+/** A purchase failed. */
+export interface PurchaseFailedEvent {
+  type: 'purchaseFailed';
+  flowId: string;
+  screenId: string;
+  componentId: string;
+  productRef: string;
+  provider: string;
+  /** The normalized error, with the vendor's own code and message when known. */
+  error: SetgreetPurchaseError;
+  timestamp: number;
+}
+
+/** A purchase is pending approval (Ask to Buy, a deferred payment). */
+export interface PurchasePendingEvent {
+  type: 'purchasePending';
+  flowId: string;
+  screenId: string;
+  componentId: string;
+  productRef: string;
+  provider: string;
+  timestamp: number;
+}
+
+/** A restore finished; `status` says whether anything was restored. */
+export interface RestoreCompletedEvent {
+  type: 'restoreCompleted';
+  flowId: string;
+  screenId: string;
+  componentId: string;
+  provider: string;
+  /** `'restored'` or `'nothingToRestore'`. */
+  status: Exclude<SetgreetRestoreStatus, 'failed'>;
+  accessRefs: string[];
+  timestamp: number;
+}
+
+/** A restore failed. */
+export interface RestoreFailedEvent {
+  type: 'restoreFailed';
+  flowId: string;
+  screenId: string;
+  componentId: string;
+  provider: string;
+  error: SetgreetPurchaseError;
+  timestamp: number;
+}
+
 // Union type for all events
 export type SetgreetFlowEvent =
   | FlowStartedEvent
@@ -130,7 +212,13 @@ export type SetgreetFlowEvent =
   | ScreenChangedEvent
   | ActionTriggeredEvent
   | PermissionRequestedEvent
-  | FlowErrorEvent;
+  | FlowErrorEvent
+  | PurchaseCompletedEvent
+  | PurchaseCancelledEvent
+  | PurchaseFailedEvent
+  | PurchasePendingEvent
+  | RestoreCompletedEvent
+  | RestoreFailedEvent;
 
 // Subscription handle for cleanup
 export interface FlowEventSubscription {
@@ -146,4 +234,10 @@ export interface FlowEventCallbacks {
   onActionTriggered?: (event: ActionTriggeredEvent) => void;
   onPermissionRequested?: (event: PermissionRequestedEvent) => void;
   onFlowError?: (event: FlowErrorEvent) => void;
+  onPurchaseCompleted?: (event: PurchaseCompletedEvent) => void;
+  onPurchaseCancelled?: (event: PurchaseCancelledEvent) => void;
+  onPurchaseFailed?: (event: PurchaseFailedEvent) => void;
+  onPurchasePending?: (event: PurchasePendingEvent) => void;
+  onRestoreCompleted?: (event: RestoreCompletedEvent) => void;
+  onRestoreFailed?: (event: RestoreFailedEvent) => void;
 }
