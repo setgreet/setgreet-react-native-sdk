@@ -38,6 +38,12 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
     super.invalidate()
   }
 
+  /// Hands `initialize` to the SDK on the main queue. Every call that needs an
+  /// initialized SDK (`identifyUser`, `resetUser`, `trackEvent`, `trackScreen`,
+  /// `showFlow`) is queued there too, FIFO behind it: on a fresh install, one
+  /// that reached the SDK first would build a request with no app key, which
+  /// the SDK treats as a fatal error. `setPurchaseProvider` stays inline (see
+  /// there).
   @objc(initialize:config:)
   func initialize(appKey: String, config: NSDictionary?) {
     let debug = (config?["debugMode"] as? Bool) ?? false
@@ -295,31 +301,47 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
     return Setgreet.shared.anonymousId
   }
 
+  // `identifyUser`, `resetUser`, `trackEvent`, `trackScreen` and `showFlow`
+  // run on the main queue, behind `initialize` (see there).
+
   @objc(identifyUser:attributes:operation:locale:)
   func identifyUser(userId: String, attributes: NSDictionary?, operation: String?, locale: String?) {
     let op: SetgreetSDK.Operation = (operation?.lowercased() == "update") ? .update : .create
+    let userAttributes = attributes as? [String: Any]
 
-    Setgreet.shared.identifyUser(
-      userId: userId,
-      attributes: attributes as? [String: Any],
-      operation: op,
-      locale: locale
-    )
+    DispatchQueue.main.async {
+      Setgreet.shared.identifyUser(
+        userId: userId,
+        attributes: userAttributes,
+        operation: op,
+        locale: locale
+      )
+    }
   }
 
   @objc(resetUser)
   func resetUser() {
-    Setgreet.shared.resetUser()
+    DispatchQueue.main.async {
+      Setgreet.shared.resetUser()
+    }
   }
 
   @objc(trackEvent:properties:)
   func trackEvent(eventName: String, properties: NSDictionary?) {
-    Setgreet.shared.trackEvent(eventName: eventName, properties: properties as? [String: Any])
+    let eventProperties = properties as? [String: Any]
+
+    DispatchQueue.main.async {
+      Setgreet.shared.trackEvent(eventName: eventName, properties: eventProperties)
+    }
   }
 
   @objc(trackScreen:properties:)
   func trackScreen(screenName: String, properties: NSDictionary?) {
-    Setgreet.shared.trackScreen(screenName: screenName, properties: properties as? [String: Any])
+    let screenProperties = properties as? [String: Any]
+
+    DispatchQueue.main.async {
+      Setgreet.shared.trackScreen(screenName: screenName, properties: screenProperties)
+    }
   }
 
   @objc(showFlow:)
@@ -333,11 +355,11 @@ class RNSetgreet: RCTEventEmitter, RNSetgreetPurchaseRequestSending {
 
   /// Registers a proxy provider that forwards every call to the JS provider.
   ///
-  /// Inline, not on the main queue: `identifyUser` / `resetUser` run inline
-  /// on this module's queue and read the registered provider right away, so
-  /// an `identifyUser` that follows `setPurchaseProvider` must find it. The
-  /// SDK's registration is lock-guarded and safe from any thread. Its preload
-  /// still runs after `initialize` (see RNSetgreetPurchaseBridge.swift).
+  /// Inline, not on the main queue: an `identifyUser` / `resetUser` that
+  /// follows it is queued on the main queue, so it runs after the
+  /// registration and finds the provider. The SDK's registration is
+  /// lock-guarded and safe from any thread. Its preload still runs after
+  /// `initialize` (see RNSetgreetPurchaseBridge.swift).
   @objc(setPurchaseProvider:defaultSource:)
   func setPurchaseProvider(_ providerId: String, defaultSource: NSDictionary?) {
     purchaseBridge.attach(sender: self)

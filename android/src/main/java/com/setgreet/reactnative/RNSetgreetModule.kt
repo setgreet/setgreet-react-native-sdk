@@ -7,13 +7,15 @@ import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableMapKeySetIterator
 import com.facebook.react.bridge.ReadableType
-import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.setgreet.Setgreet
 import com.setgreet.listener.DismissReason
 import com.setgreet.listener.ErrorType
 import com.setgreet.listener.SetgreetFlowEvent
+import com.setgreet.model.Operation
 import com.setgreet.model.SetgreetConfig
+import com.setgreet.purchases.SetgreetPurchaseProvider
+import com.setgreet.purchases.SetgreetPurchaseSource
 
 @ReactModule(name = RNSetgreetModule.NAME)
 class RNSetgreetModule(reactContext: ReactApplicationContext) :
@@ -32,6 +34,38 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
     override fun emitRequest(body: Map<String, Any?>): Boolean = emitPurchaseRequest(body)
   }
 
+  /** The SDK calls, in order: see RNSetgreetSdkCalls. */
+  private val sdkCalls = RNSetgreetSdkCalls(object : RNSetgreetNativeSdk {
+    override fun initialize(appKey: String, debugMode: Boolean) {
+      Setgreet.initialize(reactApplicationContext, appKey, SetgreetConfig(debugMode = debugMode))
+      setupFlowCallbacks()
+    }
+
+    override fun identifyUser(userId: String, attributes: Map<String, Any>?, operation: Operation, locale: String?) {
+      Setgreet.identifyUser(userId, attributes, operation, locale)
+    }
+
+    override fun resetUser() {
+      Setgreet.resetUser()
+    }
+
+    override fun trackEvent(eventName: String, properties: Map<String, Any>?) {
+      Setgreet.trackEvent(eventName, properties)
+    }
+
+    override fun trackScreen(screenName: String, properties: Map<String, Any>?) {
+      Setgreet.trackScreen(screenName, properties)
+    }
+
+    override fun showFlow(flowId: String) {
+      Setgreet.showFlow(flowId)
+    }
+
+    override fun setPurchaseProvider(provider: SetgreetPurchaseProvider, defaultSource: SetgreetPurchaseSource) {
+      Setgreet.setPurchaseProvider(provider, defaultSource)
+    }
+  })
+
   override fun getName(): String {
     return NAME
   }
@@ -43,12 +77,9 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
       }
 
       val debugMode = config?.getBoolean("debugMode") ?: false
-      val cfg = SetgreetConfig(debugMode = debugMode)
 
-      UiThreadUtil.runOnUiThread {
-        Setgreet.initialize(reactApplicationContext, appKey, cfg)
-        setupFlowCallbacks()
-      }
+      // On the main thread; the calls that need it initialized follow it there.
+      sdkCalls.initialize(appKey, debugMode)
     } catch (e: Exception) {
       throw e
     }
@@ -300,21 +331,21 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
   /**
    * Registers a proxy provider that forwards every call to the JS provider.
    *
-   * Inline, not posted to the UI thread: [identifyUser] / [resetUser] run
-   * inline on this thread and read the registered provider right away, so an
-   * `identifyUser` that follows `setPurchaseProvider` must find it. The SDK's
-   * registration is synchronized and safe from any thread. Its preload runs on
-   * the main dispatcher, which posts asynchronous messages, so it is not
-   * guaranteed to start after the [initialize] runnable posted before it. That
-   * is harmless: the catalog sync and the access-attribute write come after the
-   * JS round trip and are skipped while the SDK is not initialized, so at worst
-   * this launch's registration-time sync is skipped.
+   * Inline, not posted to the main thread like the other calls (see
+   * RNSetgreetSdkCalls): an [identifyUser] / [resetUser] that follows it is
+   * posted, so it runs after the registration and finds the provider. The
+   * SDK's registration is synchronized and safe from any thread. Its preload
+   * runs on the main dispatcher, which posts asynchronous messages, so it is
+   * not guaranteed to start after the [initialize] runnable posted before it.
+   * That is harmless: the catalog sync and the access-attribute write come
+   * after the JS round trip and are skipped while the SDK is not initialized,
+   * so at worst this launch's registration-time sync is skipped.
    */
   override fun setPurchaseProvider(providerId: String, defaultSource: ReadableMap) {
     purchaseBridge.attach(purchaseRequestSender)
     val provider = RNSetgreetPurchaseProvider(providerId, purchaseBridge)
     val source = RNSetgreetPurchaseCoding.source(defaultSource.toHashMap())
-    Setgreet.setPurchaseProvider(provider, source)
+    sdkCalls.setPurchaseProvider(provider, source)
   }
 
   /** JS answered a purchase request. Arrives on the native modules thread. */
@@ -352,26 +383,26 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
 
       val attrs = attributes?.toNonNullAnyMap()
       val op = when (operation?.lowercase()) {
-        "update" -> com.setgreet.model.Operation.UPDATE
-        else -> com.setgreet.model.Operation.CREATE
+        "update" -> Operation.UPDATE
+        else -> Operation.CREATE
       }
 
-      Setgreet.identifyUser(userId, attrs, op, locale)
+      sdkCalls.identifyUser(userId, attrs, op, locale)
     } catch (e: Exception) {
       throw e
     }
   }
 
   override fun resetUser() {
-    Setgreet.resetUser()
+    sdkCalls.resetUser()
   }
 
   override fun trackEvent(eventName: String, properties: ReadableMap?) {
-    Setgreet.trackEvent(eventName, properties?.toNonNullAnyMap())
+    sdkCalls.trackEvent(eventName, properties?.toNonNullAnyMap())
   }
 
   override fun trackScreen(screenName: String, properties: ReadableMap?) {
-    Setgreet.trackScreen(screenName, properties?.toNonNullAnyMap())
+    sdkCalls.trackScreen(screenName, properties?.toNonNullAnyMap())
   }
 
   override fun showFlow(flowId: String) {
@@ -381,7 +412,7 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
         throw IllegalArgumentException("Flow ID cannot be empty")
       }
       
-      Setgreet.showFlow(flowId)
+      sdkCalls.showFlow(flowId)
     } catch (e: Exception) {
       throw e
     }
