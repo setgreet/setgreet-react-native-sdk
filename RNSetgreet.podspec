@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   s.ios.frameworks = 'UIKit'
 
   # SetgreetSDK dependency - this will be resolved by the main app's Podfile
-  s.dependency 'SetgreetSDK', '1.6.0'
+  s.dependency 'SetgreetSDK', '1.8.0'
 
   # React Native's helper: React-Core, the codegen spec and, under the New
   # Architecture, RCT_NEW_ARCH_ENABLED. Older React Native versions lack it.
