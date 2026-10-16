@@ -9,7 +9,6 @@ import com.facebook.react.bridge.ReadableMapKeySetIterator
 import com.facebook.react.bridge.ReadableType
 import com.setgreet.Setgreet
 import com.setgreet.listener.DismissReason
-import com.setgreet.listener.ErrorType
 import com.setgreet.listener.SetgreetFlowEvent
 import com.setgreet.model.Operation
 import com.setgreet.model.SetgreetConfig
@@ -99,13 +98,13 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
         sendEvent(createScreenChangedEvent(event))
       }
       onActionTriggered { event ->
-        sendEvent(createActionTriggeredEvent(event))
+        sendEvent(Arguments.makeNativeMap(RNSetgreetFlowEventCoding.encode(event)))
       }
       onPermissionRequested { event ->
         sendEvent(createPermissionRequestedEvent(event))
       }
       onError { event ->
-        sendEvent(createFlowErrorEvent(event))
+        sendEvent(Arguments.makeNativeMap(RNSetgreetFlowEventCoding.encode(event)))
       }
       onPurchaseCompleted { event ->
         sendEvent(createPurchaseCompletedEvent(event))
@@ -124,6 +123,24 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
       }
       onRestoreFailed { event ->
         sendEvent(createRestoreFailedEvent(event))
+      }
+    }
+    // Custom action, track event and remind later reach a flow listener only
+    // (the callbacks have no slot for them). The listener is a separate slot
+    // that also receives every event above, so only those three are
+    // forwarded from it (see RNSetgreetFlowEventCoding.encodeListenerEvent).
+    //
+    // The SDK has ONE listener slot: this replaces a listener the host app set
+    // before, and a host `Setgreet.setFlowListener` call after initialize
+    // silently stops these three events in JS (documented in the README).
+    //
+    // TODO: once the Android pin moves to 1.8.0, which adds the builder
+    // callbacks onCustomAction, onTrackEvent and onRemindLater, register
+    // those in the block above and drop this setFlowListener call. Never
+    // register both: each of the three events would then reach JS twice.
+    Setgreet.setFlowListener { event ->
+      RNSetgreetFlowEventCoding.encodeListenerEvent(event)?.let {
+        sendEvent(Arguments.makeNativeMap(it))
       }
     }
   }
@@ -179,31 +196,6 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
       putInt("fromIndex", event.fromIndex)
       putInt("toIndex", event.toIndex)
       putInt("screenCount", event.screenCount)
-      putDouble("timestamp", event.timestamp.toDouble())
-    }
-  }
-
-  private fun createActionTriggeredEvent(event: SetgreetFlowEvent.ActionTriggered): WritableMap {
-    return Arguments.createMap().apply {
-      putString("type", "actionTriggered")
-      putString("flowId", event.flowId)
-      putString("actionType", event.actionType.name.lowercase())
-      if (event.actionName != null) {
-        putString("actionName", event.actionName)
-      } else {
-        putNull("actionName")
-      }
-      putInt("screenIndex", event.screenIndex)
-      putDouble("timestamp", event.timestamp.toDouble())
-    }
-  }
-
-  private fun createFlowErrorEvent(event: SetgreetFlowEvent.FlowError): WritableMap {
-    return Arguments.createMap().apply {
-      putString("type", "flowError")
-      putString("flowId", event.flowId)
-      putString("errorType", event.errorType.toJsString())
-      putString("message", event.message)
       putDouble("timestamp", event.timestamp.toDouble())
     }
   }
@@ -306,13 +298,6 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
     DismissReason.SWIPE_DOWN -> "swipeDown"
     DismissReason.COMPLETED -> "completed"
     DismissReason.REMIND_LATER -> "remindLater"
-  }
-
-  private fun ErrorType.toJsString(): String = when (this) {
-    ErrorType.NETWORK -> "network"
-    ErrorType.PARSE -> "parse"
-    ErrorType.DISPLAY -> "display"
-    ErrorType.UNKNOWN -> "unknown"
   }
 
   override fun addListener(eventType: String?) {

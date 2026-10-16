@@ -17,12 +17,10 @@ export type DismissReason =
 // Error types for flow errors
 export type ErrorType = 'network' | 'parse' | 'display' | 'unknown';
 
-// Action types for button actions
+// Action types for component actions
 /**
- * The action a tapped component performed, as the native SDKs report it on
- * `actionTriggered`: the Android `ActionType` enum name lower-cased. (The iOS
- * SDK does not currently emit this event.) The previous union listed names
- * no runtime ever sent (`back`, `close`, `notification_permission`, ...).
+ * The action a component performed, as `actionTriggered` reports it: the
+ * canonical snake_case name, the same on iOS and Android.
  */
 export type ActionType =
   | 'next'
@@ -112,6 +110,9 @@ export interface ActionTriggeredEvent {
   timestamp: number;
 }
 
+/**
+ * A flow the SDK set out to show could not be shown.
+ */
 export interface FlowErrorEvent {
   type: 'flowError';
   flowId: string;
@@ -125,6 +126,46 @@ export interface PermissionRequestedEvent {
   flowId: string;
   permissionType: PermissionType;
   result: PermissionResult;
+  screenIndex: number;
+  timestamp: number;
+}
+
+/**
+ * A component whose action is Custom was tapped. `data` is the custom data
+ * configured on the action in the editor, or `null` when it has none.
+ *
+ * On Android every value arrives as a string (numbers and booleans included)
+ * and a nested object or array as `null`; on iOS values keep their JSON type.
+ */
+export interface CustomActionEvent {
+  type: 'customAction';
+  flowId: string;
+  screenIndex: number;
+  data: Record<string, unknown> | null;
+  timestamp: number;
+}
+
+/**
+ * A component whose action is Track Event was tapped. `properties` are the
+ * event properties configured on the action, or `null` when it has none
+ * (value types as for `CustomActionEvent.data`).
+ */
+export interface TrackEventEvent {
+  type: 'trackEvent';
+  flowId: string;
+  screenIndex: number;
+  eventName: string;
+  properties: Record<string, unknown> | null;
+  timestamp: number;
+}
+
+/**
+ * A component whose action is Remind Later was tapped. The flow then closes,
+ * so a `flowDismissed` event with reason `remindLater` follows.
+ */
+export interface RemindLaterEvent {
+  type: 'remindLater';
+  flowId: string;
   screenIndex: number;
   timestamp: number;
 }
@@ -213,6 +254,9 @@ export type SetgreetFlowEvent =
   | ActionTriggeredEvent
   | PermissionRequestedEvent
   | FlowErrorEvent
+  | CustomActionEvent
+  | TrackEventEvent
+  | RemindLaterEvent
   | PurchaseCompletedEvent
   | PurchaseCancelledEvent
   | PurchaseFailedEvent
@@ -234,6 +278,9 @@ export interface FlowEventCallbacks {
   onActionTriggered?: (event: ActionTriggeredEvent) => void;
   onPermissionRequested?: (event: PermissionRequestedEvent) => void;
   onFlowError?: (event: FlowErrorEvent) => void;
+  onCustomAction?: (event: CustomActionEvent) => void;
+  onTrackEvent?: (event: TrackEventEvent) => void;
+  onRemindLater?: (event: RemindLaterEvent) => void;
   onPurchaseCompleted?: (event: PurchaseCompletedEvent) => void;
   onPurchaseCancelled?: (event: PurchaseCancelledEvent) => void;
   onPurchaseFailed?: (event: PurchaseFailedEvent) => void;

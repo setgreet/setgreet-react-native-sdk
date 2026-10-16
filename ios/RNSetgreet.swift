@@ -81,6 +81,15 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
         .onError { [weak self] event in
           self?.sendFlowEvent(self?.createFlowErrorEvent(event))
         }
+        .onCustomAction { [weak self] event in
+          self?.sendFlowEvent(self?.createCustomActionEvent(event))
+        }
+        .onTrackEvent { [weak self] event in
+          self?.sendFlowEvent(self?.createTrackEventEvent(event))
+        }
+        .onRemindLater { [weak self] event in
+          self?.sendFlowEvent(self?.createRemindLaterEvent(event))
+        }
         .onPurchaseCompleted { [weak self] event in
           self?.sendFlowEvent(self?.createPurchaseCompletedEvent(event))
         }
@@ -153,6 +162,8 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
     var dict: [String: Any] = [
       "type": "actionTriggered",
       "flowId": event.flowId,
+      // The SDK reports the canonical snake_case name (`remind_later`,
+      // `request_notification_permission`), which lower-casing leaves as is.
       "actionType": event.actionType.lowercased(),
       "screenIndex": event.screenIndex,
       "timestamp": event.timestamp * 1000
@@ -173,6 +184,68 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
       "message": event.message,
       "timestamp": event.timestamp * 1000
     ]
+  }
+
+  private func createCustomActionEvent(_ event: CustomActionEvent) -> [String: Any] {
+    return [
+      "type": "customAction",
+      "flowId": event.flowId,
+      "screenIndex": event.screenIndex,
+      "data": jsonObject(event.data),
+      "timestamp": event.timestamp * 1000
+    ]
+  }
+
+  private func createTrackEventEvent(_ event: TrackEventEvent) -> [String: Any] {
+    return [
+      "type": "trackEvent",
+      "flowId": event.flowId,
+      "screenIndex": event.screenIndex,
+      "eventName": event.eventName,
+      "properties": jsonObject(event.properties),
+      "timestamp": event.timestamp * 1000
+    ]
+  }
+
+  private func createRemindLaterEvent(_ event: RemindLaterEvent) -> [String: Any] {
+    return [
+      "type": "remindLater",
+      "flowId": event.flowId,
+      "screenIndex": event.screenIndex,
+      "timestamp": event.timestamp * 1000
+    ]
+  }
+
+  /// A payload dictionary React Native can carry (`NSNull` when absent): it
+  /// rejects any value that is not a JSON type, so anything else is sent as
+  /// its description.
+  private func jsonObject(_ values: [String: Any]?) -> Any {
+    guard let values = values else { return NSNull() }
+    return values.mapValues(jsonValue)
+  }
+
+  private func jsonValue(_ value: Any) -> Any {
+    // An `Optional` boxed in `Any` (a nil value in the payload) would
+    // otherwise fall through to `default` and reach JS as the string "nil".
+    guard let value = unwrapped(value) else { return NSNull() }
+    switch value {
+    case is NSNull, is String, is Bool, is Int, is Double, is NSNumber:
+      return value
+    case let dictionary as [String: Any]:
+      return dictionary.mapValues(jsonValue)
+    case let array as [Any]:
+      return array.map(jsonValue)
+    default:
+      return String(describing: value)
+    }
+  }
+
+  /// The value inside any `Optional` layers, or `nil` for an empty one.
+  private func unwrapped(_ value: Any) -> Any? {
+    let mirror = Mirror(reflecting: value)
+    guard mirror.displayStyle == .optional else { return value }
+    guard let wrapped = mirror.children.first else { return nil }
+    return unwrapped(wrapped.value)
   }
 
   private func createPermissionRequestedEvent(_ event: PermissionRequestedEvent) -> [String: Any] {
