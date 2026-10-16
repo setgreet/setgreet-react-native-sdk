@@ -199,10 +199,18 @@ Listen to flow lifecycle events to track user interactions and flow completion.
 - `onFlowCompleted`: Called when user completes all screens in the flow
 - `onFlowDismissed`: Called when user dismisses the flow before completion
 - `onScreenChanged`: Called when user navigates between screens
-- `onActionTriggered`: Called when user interacts with buttons
+- `onActionTriggered`: Called when a button's action is triggered, just before it runs, with the action's type (see Action Types below). It also fires when required inputs on the screen then stop the action
+- `onCustomAction`: Called when the user taps a component whose action is Custom, with the custom data set on the action in the editor (`data`, `null` when there is none)
+- `onTrackEvent`: Called when the user taps a component whose action is Track Event, with the event's `eventName` and `properties` (`null` when there are none)
 - `onPermissionRequested`: Called when a permission request completes
-- `onFlowError`: Called when an error occurs during flow operations
+- `onFlowError`: Called when an error occurs during flow operations, with its `errorType`: `network`, `parse`, `display` or `unknown`
 - Purchase and restore callbacks: see [Purchases and paywalls](#purchases-and-paywalls)
+
+Every event carries `flowId` and `timestamp`; `onCustomAction` and `onTrackEvent` also carry the `screenIndex` (0-based) where the user acted.
+
+> **Android:** `onCustomAction` and `onTrackEvent` arrive through the native SDK's flow listener, which holds a single listener. The SDK registers its own when you call `initialize`, replacing any listener your native code set earlier. If your native code calls `Setgreet.setFlowListener` after `initialize`, these two callbacks stop firing in JavaScript. The other callbacks are not affected.
+
+In `onCustomAction` data and `onTrackEvent` properties, every value arrives as a string on Android (numbers and booleans included) and a nested object or array as `null`; on iOS values keep their JSON type.
 
 **Using the useFlowEvents Hook (Recommended):**
 
@@ -232,8 +240,16 @@ function MyComponent() {
     onActionTriggered: (event) => {
       console.log(`Action: ${event.actionType}`);
       if (event.actionName) {
-        console.log(`Custom event name: ${event.actionName}`);
+        console.log(`Track Event name: ${event.actionName}`);
       }
+    },
+    onCustomAction: (event) => {
+      console.log(`Custom action on screen ${event.screenIndex + 1}`);
+      console.log(`Data: ${JSON.stringify(event.data)}`);
+    },
+    onTrackEvent: (event) => {
+      console.log(`Track event: ${event.eventName}`);
+      console.log(`Properties: ${JSON.stringify(event.properties)}`);
     },
     onPermissionRequested: (event) => {
       console.log(`Permission: ${event.permissionType}`);
@@ -256,6 +272,7 @@ import {
   addFlowCompletedListener,
   addFlowDismissedListener,
   addPermissionRequestedListener,
+  addCustomActionListener,
 } from '@setgreet/react-native-sdk';
 
 // Subscribe to specific events
@@ -268,10 +285,18 @@ const permissionSubscription = addPermissionRequestedListener((event) => {
   console.log(`Permission ${event.permissionType}: ${event.result}`);
 });
 
+// Subscribe to custom actions
+const customActionSubscription = addCustomActionListener((event) => {
+  console.log(`Custom action data: ${JSON.stringify(event.data)}`);
+});
+
 // Clean up when done
 subscription.remove();
 permissionSubscription.remove();
+customActionSubscription.remove();
 ```
+
+Every callback has a listener: `addFlowStartedListener`, `addFlowCompletedListener`, `addFlowDismissedListener`, `addScreenChangedListener`, `addActionTriggeredListener`, `addCustomActionListener`, `addTrackEventListener`, `addPermissionRequestedListener` and `addFlowErrorListener` (purchase listeners: see [Purchase events](#purchase-events)). `addFlowEventListener` receives every event; switch on its `type`.
 
 **Dismiss Reasons:**
 
@@ -284,6 +309,18 @@ permissionSubscription.remove();
 | `programmatic` | Flow was dismissed programmatically         |
 | `swipeDown`    | User swiped down to dismiss a bottom sheet  |
 | `completed`    | Flow reached its end node                   |
+
+**Action Types:**
+
+`onActionTriggered` reports `actionType` as one of these snake_case names, the same on iOS and Android. `actionName` is the event name for `track_event` and `null` otherwise.
+
+- Navigation: `next`, `previous`, `skip`
+- Closing the flow: `dismiss`
+- Links: `url`
+- Permission requests: `request_notification_permission`, `request_location_permission`, `request_camera_permission`, `request_tracking_permission`, `request_microphone_permission`, `request_photo_library_permission`
+- System: `request_review`, `share`, `open_settings`
+- Track Event and Custom: `track_event`, `custom`
+- Paywalls: `purchase`, `restore_purchases`
 
 **Permission Types:**
 

@@ -9,6 +9,9 @@ import type {
   ActionTriggeredEvent,
   PermissionRequestedEvent,
   FlowErrorEvent,
+  CustomActionEvent,
+  TrackEventEvent,
+  RemindLaterEvent,
   PurchaseCompletedEvent,
   PurchaseCancelledEvent,
   PurchaseFailedEvent,
@@ -172,6 +175,57 @@ export function addFlowErrorListener(
 }
 
 /**
+ * Subscribe to custom action events
+ */
+export function addCustomActionListener(
+  callback: (event: CustomActionEvent) => void
+): FlowEventSubscription {
+  const subscription = eventEmitter.addListener(
+    'SetgreetFlowEvent',
+    (event: SetgreetFlowEvent) => {
+      if (event.type === 'customAction') {
+        callback(event);
+      }
+    }
+  );
+  return { remove: () => subscription.remove() };
+}
+
+/**
+ * Subscribe to track event events
+ */
+export function addTrackEventListener(
+  callback: (event: TrackEventEvent) => void
+): FlowEventSubscription {
+  const subscription = eventEmitter.addListener(
+    'SetgreetFlowEvent',
+    (event: SetgreetFlowEvent) => {
+      if (event.type === 'trackEvent') {
+        callback(event);
+      }
+    }
+  );
+  return { remove: () => subscription.remove() };
+}
+
+/**
+ * Subscribe to remind later events
+ */
+export function addRemindLaterListener(
+  callback: (event: RemindLaterEvent) => void
+): FlowEventSubscription {
+  const subscription = eventEmitter.addListener(
+    'SetgreetFlowEvent',
+    (event: SetgreetFlowEvent) => {
+      if (event.type === 'remindLater') {
+        callback(event);
+      }
+    }
+  );
+  return { remove: () => subscription.remove() };
+}
+
+/**
  * Subscribe to purchase completed events
  */
 export function addPurchaseCompletedListener(
@@ -317,6 +371,15 @@ export function useFlowEvents(callbacks: FlowEventCallbacks): void {
         break;
       case 'flowError':
         currentCallbacks.onFlowError?.(event);
+        break;
+      case 'customAction':
+        currentCallbacks.onCustomAction?.(event);
+        break;
+      case 'trackEvent':
+        currentCallbacks.onTrackEvent?.(event);
+        break;
+      case 'remindLater':
+        currentCallbacks.onRemindLater?.(event);
         break;
       case 'purchaseCompleted':
         currentCallbacks.onPurchaseCompleted?.(event);
