@@ -313,6 +313,13 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
   }
 
   /**
+   * The Android SDK renders Lottie out of the box (it depends on lottie-compose),
+   * so there is nothing to register: Lottie is always available here. The
+   * method exists so apps call one `registerLottie()` on both platforms.
+   */
+  override fun registerLottie(): Boolean = true
+
+  /**
    * Registers a proxy provider that forwards every call to the JS provider.
    *
    * Inline, not posted to the main thread like the other calls (see

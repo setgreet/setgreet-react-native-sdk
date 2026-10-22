@@ -35,6 +35,72 @@ cd ios && pod install
 
 No additional setup required for Android.
 
+### 4. Lottie animations (optional)
+
+> [!WARNING]
+> A missing or incomplete Podfile setup for Lottie can build without errors and then **crash at launch**. Without the `pre_install` block below, the app crashes with `dyld: Library not loaded: @rpath/Lottie.framework/Lottie` (referenced from `SetgreetSDKLottie.framework`). Without the `post_install` setting, the build can fail while compiling the `SetgreetSDKLottie` module against `Lottie`. Apply every Podfile line below. A Podfile allows only one `pre_install` and one `post_install` block, so **merge** these lines into the blocks your Podfile already has instead of adding second ones.
+
+Lottie support is opt-in on iOS, so apps that don't use it stay smaller. Without it, a Lottie component in a flow renders nothing on iOS; the rest of the flow is unaffected. On Android the native SDK already includes Lottie.
+
+**iOS:** add the `RNSetgreet/Lottie` pod to your `ios/Podfile`. It brings in the `SetgreetSDKLottie` module and `lottie-ios`. `SetgreetSDKLottie` is a prebuilt dynamic framework that loads `@rpath/Lottie.framework`, built with library evolution, so build `lottie-ios` that way too (React Native builds pods as static libraries by default):
+
+```ruby
+# Added for Setgreet Lottie. If your Podfile already has a pre_install block,
+# put the loop inside it instead.
+pre_install do |installer|
+  installer.pod_targets.each do |pod|
+    if pod.name == 'lottie-ios'
+      def pod.build_type
+        Pod::BuildType.dynamic_framework
+      end
+    end
+  end
+end
+
+target 'YourApp' do
+  config = use_native_modules!
+
+  # Added for Setgreet Lottie. The path must be the one autolinking uses for
+  # RNSetgreet (see EXTERNAL SOURCES in Podfile.lock), so resolve it the way
+  # the React Native template resolves react_native_pods.rb.
+  setgreet_path = Pathname.new(File.dirname(Pod::Executable.execute_command('node', [
+    '--preserve-symlinks', '-p',
+    'require.resolve("@setgreet/react-native-sdk/package.json", {paths: [process.argv[1]]})',
+    __dir__,
+  ]).strip)).relative_path_from(Pathname.new(__dir__)).to_s
+  pod 'RNSetgreet/Lottie', :path => setgreet_path
+
+  # ... use_react_native!(...)
+
+  # Your existing post_install block: keep what it does and add the loop.
+  post_install do |installer|
+    # ... react_native_post_install(...)
+
+    # Added for Setgreet Lottie
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'lottie-ios'
+      target.build_configurations.each do |config|
+        config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+      end
+    end
+  end
+end
+```
+
+Then run `cd ios && pod install`. If it stops with `There are multiple dependencies with different sources for RNSetgreet`, the `:path` differs from the one autolinking uses: compare it with the `RNSetgreet` entry under `EXTERNAL SOURCES` in `Podfile.lock`.
+
+**Using `lottie-react-native` too?** Both libraries share the one `lottie-ios` pod. `SetgreetSDKLottie` requires `lottie-ios ~> 4.6`; `lottie-react-native` 7.3.6 and later pin `lottie-ios` 4.6.0, so they resolve together. Versions up to 7.3.5 pin 4.5.0 or older, and `pod install` cannot satisfy both: upgrade `lottie-react-native` first. The Podfile lines above still apply: they change how `lottie-ios` is built, for both libraries.
+
+**Register at startup**, once, before the first flow shows:
+
+```typescript
+import { registerLottie } from '@setgreet/react-native-sdk';
+
+registerLottie(); // true when Lottie can render
+```
+
+`registerLottie()` returns `false` on iOS when the `RNSetgreet/Lottie` pod is not installed. On Android it always returns `true`. It also returns `false` when the app's native build predates `registerLottie()`, for example after an over-the-air JavaScript update. The [example app](example) does both steps.
+
 ## Usage
 
 ### Initialization

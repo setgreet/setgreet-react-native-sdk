@@ -36,6 +36,11 @@ export interface Spec extends TurboModule {
   // Anonymous ID
   getAnonymousId(): string | null;
 
+  // Optional Lottie support. Registers the native Lottie component; returns
+  // whether Lottie can render (iOS: the `RNSetgreet/Lottie` pod is installed;
+  // Android: always, the core SDK includes it).
+  registerLottie(): boolean;
+
   // Purchase providers. The native side registers a proxy provider that
   // forwards each call to JS as a `SetgreetPurchaseRequest` event; JS answers
   // request/response calls with `resolvePurchaseRequest`.

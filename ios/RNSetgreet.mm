@@ -97,6 +97,12 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getAnonymousId)
   return [_impl getAnonymousId];
 }
 
+// Synchronous: returns whether Lottie can render (see RNSetgreetImpl).
+RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSNumber *, registerLottie)
+{
+  return @([_impl registerLottie]);
+}
+
 RCT_EXPORT_METHOD(setPurchaseProvider:(NSString *)providerId defaultSource:(NSDictionary *)defaultSource)
 {
   [_impl setPurchaseProvider:providerId defaultSource:defaultSource];

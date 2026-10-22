@@ -16,6 +16,7 @@ import {
   trackEvent,
   showFlow,
   setPurchaseProvider,
+  registerLottie,
   useFlowEvents,
 } from '@setgreet/react-native-sdk';
 import { SetgreetRevenueCatProvider } from './setgreetRevenueCatProvider';
@@ -147,6 +148,12 @@ export default function App() {
   useEffect(() => {
     const run = async () => {
       try {
+        // Lottie animations (opt-in). On iOS this needs the `RNSetgreet/Lottie`
+        // pod (see ios/Podfile); without it Lottie components render nothing.
+        // It needs no app key, so it runs before the config check.
+        const lottieAvailable = registerLottie();
+        addLog(`Lottie support: ${lottieAvailable ? 'on' : 'off'}`);
+
         validateConfig(APP_KEY, TEST_FLOW_ID);
 
         // Initialize the SDK with your app key

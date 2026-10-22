@@ -19,11 +19,28 @@ project 'ReactNativeSetgreetExample.xcodeproj'
 # Static libraries, React Native's default. The SDK builds the same way with
 # `use_frameworks! :linkage => :dynamic`.
 
+# Lottie support (opt-in). SetgreetSDKLottie is a prebuilt framework that
+# loads lottie-ios as a dynamic framework built with library evolution, so
+# lottie-ios is built that way even though every other pod here is a static
+# library. Remove this block, the `RNSetgreet/Lottie` line and the lottie-ios
+# post_install setting to build without Lottie.
+pre_install do |installer|
+  installer.pod_targets.each do |pod|
+    if pod.name == 'lottie-ios'
+      def pod.build_type
+        Pod::BuildType.dynamic_framework
+      end
+    end
+  end
+end
+
 target 'ReactNativeSetgreetExample' do
   config = use_native_modules!
-  
-  # Add SetgreetSDK dependency directly
-  pod 'SetgreetSDK', :git => 'https://github.com/setgreet/setgreet-ios-sdk.git', :tag => '1.6.0'
+
+  # SetgreetSDK itself comes from the RNSetgreet podspec, which pins the
+  # version, so the example cannot drift from the wrapper. The Lottie subspec
+  # is the opt-in for Lottie animations (see `registerLottie()` in App.tsx).
+  pod 'RNSetgreet/Lottie', :path => '../node_modules/@setgreet/react-native-sdk'
 
   use_react_native!(
     :path => "../node_modules/react-native",
@@ -47,6 +64,13 @@ target 'ReactNativeSetgreetExample' do
         current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
         if current && Gem::Version.new(current) < Gem::Version.new('15.1')
           config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+        end
+      end
+
+      # Lottie support (opt-in, see pre_install above).
+      if target.name == 'lottie-ios'
+        target.build_configurations.each do |config|
+          config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
         end
       end
 

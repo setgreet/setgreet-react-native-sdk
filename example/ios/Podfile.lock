@@ -8,6 +8,7 @@ PODS:
   - hermes-engine (0.79.6):
     - hermes-engine/Pre-built (= 0.79.6)
   - hermes-engine/Pre-built (0.79.6)
+  - lottie-ios (4.6.1)
   - PurchasesHybridCommon (19.3.1):
     - RevenueCat (= 5.90.2)
   - RCT-Folly (2024.11.18.00):
@@ -1660,7 +1661,7 @@ PODS:
   - RNPurchases (10.10.2):
     - PurchasesHybridCommon (= 19.3.1)
     - React-Core
-  - RNSetgreet (1.6.0):
+  - RNSetgreet (1.8.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1683,9 +1684,38 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - SetgreetSDK (= 1.6.0)
+    - SetgreetSDK (= 1.8.0)
     - Yoga
-  - SetgreetSDK (1.6.0)
+  - RNSetgreet/Lottie (1.8.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SetgreetSDK (= 1.8.0)
+    - SetgreetSDKLottie (= 1.8.0)
+    - Yoga
+  - SetgreetSDK (1.8.0)
+  - SetgreetSDKLottie (1.8.0):
+    - lottie-ios (~> 4.6)
+    - SetgreetSDK (= 1.8.0)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
@@ -1763,13 +1793,16 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RNPurchases (from `../node_modules/react-native-purchases`)
   - "RNSetgreet (from `../node_modules/@setgreet/react-native-sdk`)"
-  - SetgreetSDK (from `https://github.com/setgreet/setgreet-ios-sdk.git`, tag `1.6.0`)
+  - "RNSetgreet/Lottie (from `../node_modules/@setgreet/react-native-sdk`)"
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
+    - lottie-ios
     - PurchasesHybridCommon
     - RevenueCat
+    - SetgreetSDK
+    - SetgreetSDKLottie
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -1916,16 +1949,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-purchases"
   RNSetgreet:
     :path: "../node_modules/@setgreet/react-native-sdk"
-  SetgreetSDK:
-    :git: https://github.com/setgreet/setgreet-ios-sdk.git
-    :tag: 1.6.0
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
-
-CHECKOUT OPTIONS:
-  SetgreetSDK:
-    :git: https://github.com/setgreet/setgreet-ios-sdk.git
-    :tag: 1.6.0
 
 SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
@@ -1935,6 +1960,7 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: 44bb6fe76a6eb400d3a992e2d0b21946ae999fa9
+  lottie-ios: 6467ca7035120c5b0e0acee58bb679cf15875686
   PurchasesHybridCommon: c364d4198150bf4027b00fcada9b4ddc280df108
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 9bc64754b40b86fa5e32f293ab3ea8eea2248339
@@ -2000,11 +2026,12 @@ SPEC CHECKSUMS:
   ReactCommon: 44c86ec3ace664c0f33b7a2ac89aced8304ef25e
   RevenueCat: c44e15b3ee88506da1fdf537c62a6c239cc41b21
   RNPurchases: 28391e533798d316c8ffeada5c8dbc59768d6d0c
-  RNSetgreet: 816f782df823c05da1381027f589f691cda92e6a
-  SetgreetSDK: 5fbf601259083832005ceed700ced7e91724875d
+  RNSetgreet: 601d31e21a6c5668202e0bb40201a4bba2c124bd
+  SetgreetSDK: 689a9c7afdee4abb243a1c5ae3fb42552d6d6c64
+  SetgreetSDKLottie: 4af7ca7107a1d07fc870b3c222d7f7f7fe90d36c
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: dc7c21200195acacb62fa920c588e7c2106de45e
 
-PODFILE CHECKSUM: d7e7236cca500098c703986c45c52fea9443904b
+PODFILE CHECKSUM: 11bf5ee06f5178c5dc342c9f8c654bc39530297e
 
 COCOAPODS: 1.16.2

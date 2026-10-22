@@ -1,5 +1,9 @@
 import Foundation
 import SetgreetSDK
+// Present only when the app opted in with the `RNSetgreet/Lottie` pod.
+#if canImport(SetgreetSDKLottie)
+import SetgreetSDKLottie
+#endif
 
 /// The module's logic. `RNSetgreet.mm` is the React Native module, under both
 /// architectures: it owns one instance, forwards every JS call to it and
@@ -371,6 +375,24 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
   @objc(getAnonymousId)
   public func getAnonymousId() -> String? {
     return Setgreet.shared.anonymousId
+  }
+
+  /// Registers the optional Lottie component. Returns whether Lottie can
+  /// render: false when the app did not install the `RNSetgreet/Lottie` pod,
+  /// in which case a Lottie component in a flow renders nothing.
+  ///
+  /// The registry is read on the main queue while a flow renders, so the
+  /// registration is queued there too, ahead of any later `showFlow`.
+  @objc(registerLottie)
+  public func registerLottie() -> Bool {
+    #if canImport(SetgreetSDKLottie)
+    DispatchQueue.main.async {
+      SetgreetLottie.register()
+    }
+    return true
+    #else
+    return false
+    #endif
   }
 
   // `identifyUser`, `resetUser`, `trackEvent`, `trackScreen` and `showFlow`
