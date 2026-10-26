@@ -1684,7 +1684,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - SetgreetSDK (= 1.8.0)
+    - SetgreetSDK (= 1.9.0)
     - Yoga
   - RNSetgreet/Lottie (1.8.0):
     - DoubleConversion
@@ -1709,13 +1709,13 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - SetgreetSDK (= 1.8.0)
-    - SetgreetSDKLottie (= 1.8.0)
+    - SetgreetSDK (= 1.9.0)
+    - SetgreetSDKLottie (= 1.9.0)
     - Yoga
-  - SetgreetSDK (1.8.0)
-  - SetgreetSDKLottie (1.8.0):
+  - SetgreetSDK (1.9.0)
+  - SetgreetSDKLottie (1.9.0):
     - lottie-ios (~> 4.6)
-    - SetgreetSDK (= 1.8.0)
+    - SetgreetSDK (= 1.9.0)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
@@ -2026,9 +2026,9 @@ SPEC CHECKSUMS:
   ReactCommon: 44c86ec3ace664c0f33b7a2ac89aced8304ef25e
   RevenueCat: c44e15b3ee88506da1fdf537c62a6c239cc41b21
   RNPurchases: 28391e533798d316c8ffeada5c8dbc59768d6d0c
-  RNSetgreet: 601d31e21a6c5668202e0bb40201a4bba2c124bd
-  SetgreetSDK: 689a9c7afdee4abb243a1c5ae3fb42552d6d6c64
-  SetgreetSDKLottie: 4af7ca7107a1d07fc870b3c222d7f7f7fe90d36c
+  RNSetgreet: 4536fd91c8bd858109c25d712f1051a7a4fa082f
+  SetgreetSDK: e3f2047dad58b386e82af12b7f902ebeb79b2fbb
+  SetgreetSDKLottie: 185f2cb8677df129d196e27613608602ef1cb096
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: dc7c21200195acacb62fa920c588e7c2106de45e
 
