@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   s.ios.frameworks = 'UIKit'
 
   # SetgreetSDK dependency - this will be resolved by the main app's Podfile
-  s.dependency 'SetgreetSDK', '1.8.0'
+  s.dependency 'SetgreetSDK', '1.9.0'
 
   # `pod 'RNSetgreet'` (what autolinking adds) installs the root spec only, so
   # apps that don't opt in to Lottie keep a Lottie-free build.
