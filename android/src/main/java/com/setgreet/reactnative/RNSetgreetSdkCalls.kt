@@ -9,6 +9,7 @@ internal interface RNSetgreetNativeSdk {
   fun initialize(appKey: String, debugMode: Boolean)
   fun identifyUser(userId: String, attributes: Map<String, Any>?, operation: Operation, locale: String?)
   fun resetUser()
+  fun setLocale(locale: String?)
   fun trackEvent(eventName: String, properties: Map<String, Any>?)
   fun trackScreen(screenName: String, properties: Map<String, Any>?)
   fun showFlow(flowId: String)
@@ -28,6 +29,10 @@ internal interface RNSetgreetNativeSdk {
  * Registering a purchase provider stays inline: the SDK's registration is
  * synchronized and safe from any thread, and an `identifyUser` posted after it
  * finds the provider when it runs.
+ *
+ * `setLocale` stays inline too: the SDK's override is synchronized, needs no
+ * initialized SDK (before `initialize` it is held and saved when `initialize`
+ * runs), and a request posted after it carries the new locale.
  */
 internal class RNSetgreetSdkCalls(
   private val sdk: RNSetgreetNativeSdk,
@@ -39,6 +44,8 @@ internal class RNSetgreetSdkCalls(
     onMainThread { sdk.identifyUser(userId, attributes, operation, locale) }
 
   fun resetUser() = onMainThread { sdk.resetUser() }
+
+  fun setLocale(locale: String?) = sdk.setLocale(locale)
 
   fun trackEvent(eventName: String, properties: Map<String, Any>?) =
     onMainThread { sdk.trackEvent(eventName, properties) }

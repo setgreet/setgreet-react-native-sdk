@@ -28,6 +28,10 @@ class RNSetgreetSdkCallsTest {
       calls += "resetUser(initialized=$initialized, provider=$provider)"
     }
 
+    override fun setLocale(locale: String?) {
+      calls += "setLocale($locale, initialized=$initialized)"
+    }
+
     override fun trackEvent(eventName: String, properties: Map<String, Any>?) {
       calls += "trackEvent($eventName, initialized=$initialized)"
     }
@@ -107,6 +111,32 @@ class RNSetgreetSdkCallsTest {
     assertEquals(
       listOf(
         "identifyUser(user-1, initialized=false, provider=null)",
+        "trackEvent(app_opened, initialized=false)",
+        "initialize(app-key)"
+      ),
+      sdk.calls
+    )
+  }
+
+  @Test
+  fun `setLocale runs inline, before initialize and ahead of posted calls`() {
+    sdkCalls.trackEvent("app_opened", null)
+    sdkCalls.setLocale("tr-TR")
+    sdkCalls.initialize("app-key", debugMode = false)
+    sdkCalls.setLocale(null)
+
+    assertEquals(
+      "both calls reached the SDK before the main thread ran",
+      listOf("setLocale(tr-TR, initialized=false)", "setLocale(null, initialized=false)"),
+      sdk.calls
+    )
+
+    mainThread.runPosted()
+
+    assertEquals(
+      listOf(
+        "setLocale(tr-TR, initialized=false)",
+        "setLocale(null, initialized=false)",
         "trackEvent(app_opened, initialized=false)",
         "initialize(app-key)"
       ),

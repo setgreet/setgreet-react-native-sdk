@@ -420,6 +420,15 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
     }
   }
 
+  /// Inline, not queued on the main queue like the calls that need an
+  /// initialized SDK: the SDK's override is lock-guarded, saved on the device
+  /// and works before `initialize`, and a request queued after it carries the
+  /// new locale.
+  @objc(setLocale:)
+  public func setLocale(_ locale: String?) {
+    Setgreet.shared.setLocale(locale)
+  }
+
   @objc(trackEvent:properties:)
   public func trackEvent(eventName: String, properties: NSDictionary?) {
     let eventProperties = properties as? [String: Any]

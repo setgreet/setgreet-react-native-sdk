@@ -20,6 +20,9 @@ export interface Spec extends TurboModule {
   ): void;
   resetUser(): void;
 
+  // Locale override, saved on the device. `null` or empty clears it.
+  setLocale(locale: string | null): void;
+
   // Tracking
   trackEvent(
     eventName: string,

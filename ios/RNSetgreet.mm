@@ -75,6 +75,11 @@ RCT_EXPORT_METHOD(resetUser)
   [_impl resetUser];
 }
 
+RCT_EXPORT_METHOD(setLocale:(NSString *)locale)
+{
+  [_impl setLocale:locale];
+}
+
 RCT_EXPORT_METHOD(trackEvent:(NSString *)eventName properties:(NSDictionary *)properties)
 {
   [_impl trackEvent:eventName properties:properties];

@@ -47,6 +47,10 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
       Setgreet.resetUser()
     }
 
+    override fun setLocale(locale: String?) {
+      Setgreet.setLocale(locale)
+    }
+
     override fun trackEvent(eventName: String, properties: Map<String, Any>?) {
       Setgreet.trackEvent(eventName, properties)
     }
@@ -387,6 +391,11 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
 
   override fun resetUser() {
     sdkCalls.resetUser()
+  }
+
+  /** Inline and callable before [initialize]: see RNSetgreetSdkCalls. */
+  override fun setLocale(locale: String?) {
+    sdkCalls.setLocale(locale)
   }
 
   override fun trackEvent(eventName: String, properties: ReadableMap?) {

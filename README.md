@@ -126,7 +126,7 @@ Identifies a user for Setgreet analytics and flow management.
 - `userId` (String): The unique identifier for the user
 - `attributes` (Optional): Additional user attributes
 - `operation` (Optional): The operation type for user attributes ('create' or 'update', defaults to 'create')
-- `locale` (Optional): User's locale (e.g., "en-US"). If not provided, uses device's default locale
+- `locale` (Optional): The language this user chose (e.g., "en-US"), saved on the user by the server. See [Language](#language) for which language content is shown in
 
 **Example:**
 
@@ -156,6 +156,29 @@ import { resetUser } from '@setgreet/react-native-sdk';
 
 resetUser();
 ```
+
+### Language
+
+Sets the language Setgreet content is shown in on this device, for every user, identified or not. Use it when the user picks a language in your app.
+
+```typescript
+import { setLocale } from '@setgreet/react-native-sdk';
+
+setLocale('tr-TR'); // show content in Turkish
+setLocale(null); // go back to the device language
+```
+
+- It is an explicit language choice, saved on the device: it survives app relaunches and `resetUser()`, and it is never stored on the user.
+- `null` or an empty string removes it, and content follows the order below again.
+- It can be called before `initialize`.
+- Pass a BCP-47 language tag such as `"tr-TR"`, `"pt-BR"` or `"de"`. A value that is not a valid tag is ignored with a warning, and the previous language stays.
+
+Content is shown in the first of these that is set:
+
+1. the `setLocale` language;
+2. the last `locale` passed to `identifyUser` for the current user;
+3. the user's locale saved on the server;
+4. the device language.
 
 ### Anonymous ID
 
