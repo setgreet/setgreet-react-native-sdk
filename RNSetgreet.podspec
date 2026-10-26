@@ -33,7 +33,7 @@ Pod::Spec.new do |s|
   # `registerLottie()` then registers. Keep the version in step with SetgreetSDK
   # above (SetgreetSDKLottie requires that exact SetgreetSDK version).
   s.subspec 'Lottie' do |ss|
-    ss.dependency 'SetgreetSDKLottie', '1.8.0'
+    ss.dependency 'SetgreetSDKLottie', '1.9.0'
   end
 
   # React Native's helper: React-Core, the codegen spec and, under the New
