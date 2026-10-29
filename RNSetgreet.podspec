@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   s.ios.frameworks = 'UIKit'
 
   # SetgreetSDK dependency - this will be resolved by the main app's Podfile
-  s.dependency 'SetgreetSDK', '1.9.0'
+  s.dependency 'SetgreetSDK', '1.10.0'
 
   # `pod 'RNSetgreet'` (what autolinking adds) installs the root spec only, so
   # apps that don't opt in to Lottie keep a Lottie-free build.
@@ -33,7 +33,7 @@ Pod::Spec.new do |s|
   # `registerLottie()` then registers. Keep the version in step with SetgreetSDK
   # above (SetgreetSDKLottie requires that exact SetgreetSDK version).
   s.subspec 'Lottie' do |ss|
-    ss.dependency 'SetgreetSDKLottie', '1.9.0'
+    ss.dependency 'SetgreetSDKLottie', '1.10.0'
   end
 
   # React Native's helper: React-Core, the codegen spec and, under the New
