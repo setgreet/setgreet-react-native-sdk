@@ -127,6 +127,7 @@ Identifies a user for Setgreet analytics and flow management.
 - `attributes` (Optional): Additional user attributes
 - `operation` (Optional): The operation type for user attributes ('create' or 'update', defaults to 'create')
 - `locale` (Optional): The language this user chose (e.g., "en-US"), saved on the user by the server. See [Language](#language) for which language content is shown in
+- `userHash` (Optional): The hex HMAC-SHA256 of `userId`, computed on your server with your app's identity verification secret. Lets Setgreet verify that the user id belongs to the signed-in user. See [Verify Users](#verify-users)
 
 **Example:**
 
@@ -144,6 +145,19 @@ identifyUser(
   'en-US'
 );
 ```
+
+### Verify Users
+
+To let Setgreet verify that a user id belongs to the signed-in user, compute a hash of the user id on your server and pass it as the fifth argument. The hash is the hex HMAC-SHA256 of the exact `userId`, keyed with the identity verification secret from your app's settings. Keep the secret on your server: never ship it in the app.
+
+```typescript
+import { identifyUser } from '@setgreet/react-native-sdk';
+
+// userHash comes from your server, for this exact user id
+identifyUser('user_123', { plan: 'pro' }, 'create', undefined, userHash);
+```
+
+The SDK keeps the hash with the user id and sends it on every request for that user. It forgets the hash when you call `resetUser()` or identify a different user id, so always pass the hash that belongs to the id in the same call. An empty hash is treated as no hash.
 
 ### Reset User
 

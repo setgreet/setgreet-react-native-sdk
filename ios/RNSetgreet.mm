@@ -65,9 +65,10 @@ RCT_EXPORT_METHOD(initialize:(NSString *)appKey config:(NSDictionary *)config)
 RCT_EXPORT_METHOD(identifyUser:(NSString *)userId
                   attributes:(NSDictionary *)attributes
                   operation:(NSString *)operation
-                  locale:(NSString *)locale)
+                  locale:(NSString *)locale
+                  userHash:(NSString *)userHash)
 {
-  [_impl identifyUser:userId attributes:attributes operation:operation locale:locale];
+  [_impl identifyUser:userId attributes:attributes operation:operation locale:locale userHash:userHash];
 }
 
 RCT_EXPORT_METHOD(resetUser)

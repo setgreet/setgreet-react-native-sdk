@@ -7,7 +7,13 @@ import com.setgreet.purchases.SetgreetPurchaseSource
 /** The native SDK calls the module makes: an interface so their order can be tested. */
 internal interface RNSetgreetNativeSdk {
   fun initialize(appKey: String, debugMode: Boolean)
-  fun identifyUser(userId: String, attributes: Map<String, Any>?, operation: Operation, locale: String?)
+  fun identifyUser(
+    userId: String,
+    attributes: Map<String, Any>?,
+    operation: Operation,
+    locale: String?,
+    userHash: String?
+  )
   fun resetUser()
   fun setLocale(locale: String?)
   fun trackEvent(eventName: String, properties: Map<String, Any>?)
@@ -40,8 +46,13 @@ internal class RNSetgreetSdkCalls(
 ) {
   fun initialize(appKey: String, debugMode: Boolean) = onMainThread { sdk.initialize(appKey, debugMode) }
 
-  fun identifyUser(userId: String, attributes: Map<String, Any>?, operation: Operation, locale: String?) =
-    onMainThread { sdk.identifyUser(userId, attributes, operation, locale) }
+  fun identifyUser(
+    userId: String,
+    attributes: Map<String, Any>?,
+    operation: Operation,
+    locale: String?,
+    userHash: String?
+  ) = onMainThread { sdk.identifyUser(userId, attributes, operation, locale, userHash) }
 
   fun resetUser() = onMainThread { sdk.resetUser() }
 

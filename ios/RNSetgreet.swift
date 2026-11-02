@@ -398,8 +398,10 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
   // `identifyUser`, `resetUser`, `trackEvent`, `trackScreen` and `showFlow`
   // run on the main queue, behind `initialize` (see there).
 
-  @objc(identifyUser:attributes:operation:locale:)
-  public func identifyUser(userId: String, attributes: NSDictionary?, operation: String?, locale: String?) {
+  @objc(identifyUser:attributes:operation:locale:userHash:)
+  public func identifyUser(
+    userId: String, attributes: NSDictionary?, operation: String?, locale: String?, userHash: String?
+  ) {
     let op: SetgreetSDK.Operation = (operation?.lowercased() == "update") ? .update : .create
     let userAttributes = attributes as? [String: Any]
 
@@ -408,7 +410,8 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
         userId: userId,
         attributes: userAttributes,
         operation: op,
-        locale: locale
+        locale: locale,
+        userHash: userHash
       )
     }
   }

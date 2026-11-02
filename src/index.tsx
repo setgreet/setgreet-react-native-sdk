@@ -92,17 +92,27 @@ export const initialize = (appKey: string, config?: InitConfig) => {
   RNSetgreet.initialize(appKey, config ?? { debugMode: false });
 };
 
+/**
+ * Identifies the user.
+ *
+ * `userHash` is optional: the hex HMAC-SHA256 of `userId`, computed on your
+ * server with your app's identity verification secret. It lets Setgreet
+ * verify that the user id belongs to the signed-in user. Never compute it in
+ * the app, the secret must stay on your server.
+ */
 export const identifyUser = (
   userId: string,
   attributes?: Record<string, unknown>,
   operation?: 'create' | 'update',
-  locale?: string
+  locale?: string,
+  userHash?: string
 ) =>
   RNSetgreet.identifyUser(
     userId,
     attributes ?? null,
     operation ?? 'create',
-    locale ?? null
+    locale ?? null,
+    userHash ?? null
   );
 
 export const resetUser = () => RNSetgreet.resetUser();
