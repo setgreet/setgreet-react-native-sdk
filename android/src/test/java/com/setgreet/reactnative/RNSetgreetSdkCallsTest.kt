@@ -12,6 +12,7 @@ class RNSetgreetSdkCallsTest {
   /** Records what reaches the SDK, and what the SDK looked like at that moment. */
   private class RecordingSdk : RNSetgreetNativeSdk {
     val calls = mutableListOf<String>()
+    val userHashes = mutableListOf<String?>()
     private var initialized = false
     private var provider: String? = null
 
@@ -20,8 +21,15 @@ class RNSetgreetSdkCallsTest {
       calls += "initialize($appKey)"
     }
 
-    override fun identifyUser(userId: String, attributes: Map<String, Any>?, operation: Operation, locale: String?) {
+    override fun identifyUser(
+      userId: String,
+      attributes: Map<String, Any>?,
+      operation: Operation,
+      locale: String?,
+      userHash: String?
+    ) {
       calls += "identifyUser($userId, initialized=$initialized, provider=$provider)"
+      userHashes += userHash
     }
 
     override fun resetUser() {
@@ -60,7 +68,7 @@ class RNSetgreetSdkCallsTest {
     // As JS calls them on a fresh install, before the main thread has run.
     sdkCalls.initialize("app-key", debugMode = false)
     sdkCalls.setPurchaseProvider(provider, SetgreetPurchaseSource.currentOffering)
-    sdkCalls.identifyUser("user-1", mapOf("plan" to "pro"), Operation.CREATE, "en-US")
+    sdkCalls.identifyUser("user-1", mapOf("plan" to "pro"), Operation.CREATE, "en-US", "hash-1")
     sdkCalls.trackEvent("app_opened", null)
     sdkCalls.trackScreen("home", null)
     sdkCalls.showFlow("flow-1")
@@ -97,7 +105,7 @@ class RNSetgreetSdkCallsTest {
 
   @Test
   fun `nothing but the registration reaches the SDK before the main thread runs`() {
-    sdkCalls.identifyUser("user-1", null, Operation.UPDATE, null)
+    sdkCalls.identifyUser("user-1", null, Operation.UPDATE, null, null)
     sdkCalls.trackEvent("app_opened", mapOf("source" to "push"))
     sdkCalls.initialize("app-key", debugMode = false)
 
@@ -142,5 +150,15 @@ class RNSetgreetSdkCallsTest {
       ),
       sdk.calls
     )
+  }
+
+  @Test
+  fun `identifyUser forwards the user hash as given, and null when omitted`() {
+    sdkCalls.identifyUser("user-1", null, Operation.CREATE, null, "abc123")
+    sdkCalls.identifyUser("user-2", null, Operation.CREATE, null, null)
+
+    mainThread.runPosted()
+
+    assertEquals(listOf("abc123", null), sdk.userHashes)
   }
 }

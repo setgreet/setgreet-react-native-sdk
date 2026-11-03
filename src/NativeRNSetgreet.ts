@@ -16,7 +16,8 @@ export interface Spec extends TurboModule {
     userId: string,
     attributes: { [key: string]: unknown } | null,
     operation: string | null,
-    locale: string | null
+    locale: string | null,
+    userHash: string | null
   ): void;
   resetUser(): void;
 

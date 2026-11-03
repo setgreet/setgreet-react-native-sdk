@@ -39,8 +39,14 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
       setupFlowCallbacks()
     }
 
-    override fun identifyUser(userId: String, attributes: Map<String, Any>?, operation: Operation, locale: String?) {
-      Setgreet.identifyUser(userId, attributes, operation, locale)
+    override fun identifyUser(
+      userId: String,
+      attributes: Map<String, Any>?,
+      operation: Operation,
+      locale: String?,
+      userHash: String?
+    ) {
+      Setgreet.identifyUser(userId, attributes, operation, locale, userHash)
     }
 
     override fun resetUser() {
@@ -371,7 +377,13 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
     }
   }
 
-  override fun identifyUser(userId: String, attributes: ReadableMap?, operation: String?, locale: String?) {
+  override fun identifyUser(
+    userId: String,
+    attributes: ReadableMap?,
+    operation: String?,
+    locale: String?,
+    userHash: String?
+  ) {
     try {
       if (userId.isBlank()) {
         throw IllegalArgumentException("User ID cannot be empty")
@@ -383,7 +395,7 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
         else -> Operation.CREATE
       }
 
-      sdkCalls.identifyUser(userId, attrs, op, locale)
+      sdkCalls.identifyUser(userId, attrs, op, locale, userHash)
     } catch (e: Exception) {
       throw e
     }
