@@ -1661,7 +1661,7 @@ PODS:
   - RNPurchases (10.10.2):
     - PurchasesHybridCommon (= 19.3.1)
     - React-Core
-  - RNSetgreet (1.8.0):
+  - RNSetgreet (1.10.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1684,38 +1684,32 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - SetgreetSDK (= 1.9.0)
     - Yoga
-  - RNSetgreet/Lottie (1.8.0):
+  - RNSetgreet/Lottie (1.10.0):
     - DoubleConversion
     - glog
     - hermes-engine
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - SetgreetSDK (= 1.9.0)
-    - SetgreetSDKLottie (= 1.9.0)
-    - Yoga
-  - SetgreetSDK (1.9.0)
-  - SetgreetSDKLottie (1.9.0):
     - lottie-ios (~> 4.6)
-    - SetgreetSDK (= 1.9.0)
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
@@ -1801,8 +1795,6 @@ SPEC REPOS:
     - lottie-ios
     - PurchasesHybridCommon
     - RevenueCat
-    - SetgreetSDK
-    - SetgreetSDKLottie
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -2026,9 +2018,7 @@ SPEC CHECKSUMS:
   ReactCommon: 44c86ec3ace664c0f33b7a2ac89aced8304ef25e
   RevenueCat: c44e15b3ee88506da1fdf537c62a6c239cc41b21
   RNPurchases: 28391e533798d316c8ffeada5c8dbc59768d6d0c
-  RNSetgreet: 4536fd91c8bd858109c25d712f1051a7a4fa082f
-  SetgreetSDK: e3f2047dad58b386e82af12b7f902ebeb79b2fbb
-  SetgreetSDKLottie: 185f2cb8677df129d196e27613608602ef1cb096
+  RNSetgreet: 4893703a3f61f507d395b62f9c34ae1824599a0f
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: dc7c21200195acacb62fa920c588e7c2106de45e
 
