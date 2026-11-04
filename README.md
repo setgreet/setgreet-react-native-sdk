@@ -35,7 +35,7 @@ cd ios && pod install
 
 #### Swift Package Manager
 
-React Native's Swift Package Manager mode (`npx react-native spm`, experimental in React Native 0.87 and 0.88, see [RFC 0994](https://github.com/react-native-community/discussions-and-proposals/pull/994)) picks up the package's `Package.swift` automatically. It depends on the public [`setgreet-ios-sdk`](https://github.com/setgreet/setgreet-ios-sdk) package at the pinned version, so nothing is added by hand. The React Native team does not recommend that mode for production apps yet; CocoaPods stays the supported path until it does.
+React Native's Swift Package Manager mode (`npx react-native spm`, experimental in React Native 0.87 and 0.88, see [RFC 0994](https://github.com/react-native-community/discussions-and-proposals/pull/994)) picks up the package's `Package.swift` automatically. The manifest expects React Native's default layout, where the React Native xcframeworks live under the app's `ios/build` folder, which is what `npx react-native spm` sets up. It depends on the public [`setgreet-ios-sdk`](https://github.com/setgreet/setgreet-ios-sdk) package at the pinned version, so nothing is added by hand. The React Native team does not recommend that mode for production apps yet; CocoaPods stays the supported path until it does.
 
 ### 3. Android Setup
 
