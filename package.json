@@ -19,6 +19,7 @@
     "ios",
     "cpp",
     "*.podspec",
+    "Package.swift",
     "react-native.config.js",
     "!ios/build",
     "!android/build",
@@ -163,6 +164,9 @@
         }
       ]
     ]
+  },
+  "swiftpmConfig": {
+    "name": "RNSetgreet"
   },
   "codegenConfig": {
     "name": "RNSetgreetSpec",

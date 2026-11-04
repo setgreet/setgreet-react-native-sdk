@@ -39,13 +39,28 @@ jobs:
         run: |
           sed -i 's/implementation "com.setgreet:setgreet:[^"]*"/implementation "com.setgreet:setgreet:'"$VERSION"'"/' android/build.gradle
 
+      # The iOS SDK reaches apps two ways, both pinned to the released tag:
+      # Package.swift (Swift Package Manager) depends on the public repository
+      # at that exact version, and the CocoaPods path vendors the xcframeworks
+      # from the same tag in ios/Frameworks.
       - name: Update iOS dependency
         if: steps.info.outputs.PLATFORM == 'ios'
         env:
           VERSION: ${{ steps.info.outputs.VERSION }}
         run: |
-          sed -i "s/s.dependency 'SetgreetSDK', '[^']*'/s.dependency 'SetgreetSDK', '$VERSION'/" RNSetgreet.podspec
-          sed -i "s/ss.dependency 'SetgreetSDKLottie', '[^']*'/ss.dependency 'SetgreetSDKLottie', '$VERSION'/" RNSetgreet.podspec
+          set -euo pipefail
+          sed -i -E "s/^(let setgreetSDKVersion: Version = \")[^\"]*(\")/\1$VERSION\2/" Package.swift
+          grep -q "let setgreetSDKVersion: Version = \"$VERSION\"" Package.swift \
+            || { echo "::error::Package.swift version line not updated"; exit 1; }
+
+          tmp="$(mktemp -d)"
+          git clone --depth 1 --branch "$VERSION" https://github.com/setgreet/setgreet-ios-sdk.git "$tmp/sdk"
+          for fw in SetgreetSDK SetgreetSDKLottie; do
+            [ -d "$tmp/sdk/$fw.xcframework" ] || { echo "::error::$fw.xcframework missing at tag $VERSION"; exit 1; }
+            rm -rf "ios/Frameworks/$fw.xcframework"
+            cp -R "$tmp/sdk/$fw.xcframework" "ios/Frameworks/$fw.xcframework"
+          done
+          rm -rf "$tmp"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7

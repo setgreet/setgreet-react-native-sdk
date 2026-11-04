@@ -11,6 +11,11 @@ build/
 *.xcworkspace
 Pods/
 
+# Swift Package Manager (Package.swift at the root)
+.build/
+.swiftpm/
+Package.resolved
+
 # Android
 *.iml
 .gradle/
