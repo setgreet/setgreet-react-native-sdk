@@ -1,9 +1,14 @@
-#import "RNSetgreet.h"
+// ios/include/RNSetgreet/RNSetgreet.h: the module's public headers directory
+// under Swift Package Manager, a private header under CocoaPods, and
+// <RNSetgreet/RNSetgreet.h> in both.
+#import <RNSetgreet/RNSetgreet.h>
 
-#if __has_include(<RNSetgreet/RNSetgreet-Swift.h>)
-#import <RNSetgreet/RNSetgreet-Swift.h>
+// The Swift half, through the protocol in ios/Interop (its own module under
+// Swift Package Manager, a public header of this pod under CocoaPods).
+#if __has_include(<RNSetgreetInterop/RNSetgreetInterop.h>)
+#import <RNSetgreetInterop/RNSetgreetInterop.h>
 #else
-#import "RNSetgreet-Swift.h"
+#import "RNSetgreetInterop.h"
 #endif
 
 // Every method forwards to RNSetgreetImpl. The RCT_EXPORT_* macros register
@@ -11,7 +16,7 @@
 // the codegen spec (getTurboModule:) calls the same Objective-C methods.
 // addListener: and removeListeners: come from RCTEventEmitter.
 @implementation RNSetgreet {
-  RNSetgreetImpl *_impl;
+  NSObject<RNSetgreetImplementing> *_impl;
 }
 
 RCT_EXPORT_MODULE(RNSetgreet)
@@ -25,9 +30,9 @@ RCT_EXPORT_MODULE(RNSetgreet)
 {
   if (self = [super init]) {
     __weak RNSetgreet *weakSelf = self;
-    _impl = [[RNSetgreetImpl alloc] initWithEmitter:^(NSString *name, NSDictionary<NSString *, id> *body) {
+    _impl = RNSetgreetMakeImpl(^(NSString *name, NSDictionary<NSString *, id> *body) {
       [weakSelf sendEventWithName:name body:body];
-    }];
+    });
   }
   return self;
 }
@@ -36,7 +41,7 @@ RCT_EXPORT_MODULE(RNSetgreet)
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return RNSetgreetImpl.supportedEvents;
+  return RNSetgreetSupportedEvents();
 }
 
 - (void)startObserving

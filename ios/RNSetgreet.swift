@@ -1,5 +1,10 @@
 import Foundation
 import SetgreetSDK
+// The protocol RNSetgreet.mm talks to (ios/Interop). A module of its own under
+// Swift Package Manager; part of this module's headers under CocoaPods.
+#if canImport(RNSetgreetInterop)
+import RNSetgreetInterop
+#endif
 // Present only when the app opted in with the `RNSetgreet/Lottie` pod.
 #if canImport(SetgreetSDKLottie)
 import SetgreetSDKLottie
@@ -10,7 +15,7 @@ import SetgreetSDKLottie
 /// emits the events it produces (an `RCTEventEmitter`, so `NativeEventEmitter`
 /// subscriptions work unchanged).
 @objc(RNSetgreetImpl)
-public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
+public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending, RNSetgreetImplementing {
   private static let eventName = "SetgreetFlowEvent"
 
   /// The events the module emits: flow events and purchase requests.
@@ -48,7 +53,7 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
   /// the SDK treats as a fatal error. `setPurchaseProvider` stays inline (see
   /// there).
   @objc(initialize:config:)
-  public func initialize(appKey: String, config: NSDictionary?) {
+  public func initialize(_ appKey: String, config: [AnyHashable: Any]?) {
     let debug = (config?["debugMode"] as? Bool) ?? false
 
     DispatchQueue.main.async { [weak self] in
@@ -378,21 +383,47 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
   }
 
   /// Registers the optional Lottie component. Returns whether Lottie can
-  /// render: false when the app did not install the `RNSetgreet/Lottie` pod,
-  /// in which case a Lottie component in a flow renders nothing.
+  /// render: false when the app did not add Lottie support (the
+  /// `RNSetgreet/Lottie` pod, or the `SetgreetSDKLottie` package product under
+  /// Swift Package Manager), in which case a Lottie component in a flow
+  /// renders nothing.
   ///
   /// The registry is read on the main queue while a flow renders, so the
   /// registration is queued there too, ahead of any later `showFlow`.
   @objc(registerLottie)
   public func registerLottie() -> Bool {
     #if canImport(SetgreetSDKLottie)
+    // CocoaPods: the Lottie subspec makes the module a dependency of this one.
     DispatchQueue.main.async {
       SetgreetLottie.register()
     }
     return true
     #else
-    return false
+    // Swift Package Manager: the app links SetgreetSDKLottie itself, so this
+    // target cannot import it. The framework is dynamic, so its entry point is
+    // looked up at runtime instead.
+    guard let register = Self.linkedLottieRegister() else {
+      return false
+    }
+    DispatchQueue.main.async {
+      register()
+    }
+    return true
     #endif
+  }
+
+  /// `SetgreetLottie.register()` from a SetgreetSDKLottie framework the app
+  /// linked on its own, or nil when none is loaded. The symbol name is the
+  /// framework's export for that function (`nm -gU SetgreetSDKLottie`); it has
+  /// no parameters and no result, so the C calling convention applies.
+  private static func linkedLottieRegister() -> (() -> Void)? {
+    guard let handle = dlopen(nil, RTLD_LAZY),
+      let symbol = dlsym(handle, "$s17SetgreetSDKLottie0A6LottieO8registeryyFZ")
+    else {
+      return nil
+    }
+    let register = unsafeBitCast(symbol, to: (@convention(c) () -> Void).self)
+    return { register() }
   }
 
   // `identifyUser`, `resetUser`, `trackEvent`, `trackScreen` and `showFlow`
@@ -400,7 +431,7 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
 
   @objc(identifyUser:attributes:operation:locale:userHash:)
   public func identifyUser(
-    userId: String, attributes: NSDictionary?, operation: String?, locale: String?, userHash: String?
+    _ userId: String, attributes: [AnyHashable: Any]?, operation: String?, locale: String?, userHash: String?
   ) {
     let op: SetgreetSDK.Operation = (operation?.lowercased() == "update") ? .update : .create
     let userAttributes = attributes as? [String: Any]
@@ -433,7 +464,7 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
   }
 
   @objc(trackEvent:properties:)
-  public func trackEvent(eventName: String, properties: NSDictionary?) {
+  public func trackEvent(_ eventName: String, properties: [AnyHashable: Any]?) {
     let eventProperties = properties as? [String: Any]
 
     DispatchQueue.main.async {
@@ -442,7 +473,7 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
   }
 
   @objc(trackScreen:properties:)
-  public func trackScreen(screenName: String, properties: NSDictionary?) {
+  public func trackScreen(_ screenName: String, properties: [AnyHashable: Any]?) {
     let screenProperties = properties as? [String: Any]
 
     DispatchQueue.main.async {
@@ -451,7 +482,7 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
   }
 
   @objc(showFlow:)
-  public func showFlow(flowId: String) {
+  public func showFlow(_ flowId: String) {
     DispatchQueue.main.async {
       Setgreet.shared.showFlow(flowId: flowId)
     }
@@ -467,7 +498,7 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
   /// lock-guarded and safe from any thread. Its preload still runs after
   /// `initialize` (see RNSetgreetPurchaseBridge.swift).
   @objc(setPurchaseProvider:defaultSource:)
-  public func setPurchaseProvider(_ providerId: String, defaultSource: NSDictionary?) {
+  public func setPurchaseProvider(_ providerId: String, defaultSource: [AnyHashable: Any]?) {
     purchaseBridge.attach(sender: self)
     let provider = RNSetgreetPurchaseProvider(providerId: providerId, bridge: purchaseBridge)
     let source = RNSetgreetPurchaseCoding.source(from: defaultSource as? [String: Any])
@@ -476,7 +507,9 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
 
   /// JS answered a purchase request.
   @objc(resolvePurchaseRequest:result:error:)
-  public func resolvePurchaseRequest(_ requestId: String, result: NSDictionary?, error: NSDictionary?) {
+  public func resolvePurchaseRequest(
+    _ requestId: String, result: [AnyHashable: Any]?, error: [AnyHashable: Any]?
+  ) {
     purchaseBridge.resolve(
       requestId: requestId,
       result: result as? [String: Any],
@@ -487,4 +520,21 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending {
   func sendPurchaseRequest(_ body: [String: Any]) {
     emit(RNSetgreetPurchaseBridge.requestEventName, body)
   }
+}
+
+// The entry points RNSetgreet.mm links against (declared in
+// RNSetgreetInterop.h), so the module needs no generated Swift header.
+
+@_cdecl("RNSetgreetMakeImpl")
+public func RNSetgreetMakeImpl(
+  _ emitter: @escaping @convention(block) (NSString, NSDictionary) -> Void
+) -> NSObject {
+  return RNSetgreetImpl(emitter: { name, body in
+    emitter(name as NSString, body as NSDictionary)
+  })
+}
+
+@_cdecl("RNSetgreetSupportedEvents")
+public func RNSetgreetSupportedEvents() -> NSArray {
+  return RNSetgreetImpl.supportedEvents as NSArray
 }

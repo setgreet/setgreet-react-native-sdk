@@ -13,10 +13,14 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => "15.0" }
   s.source       = { :git => "https://github.com/setgreet/setgreet-react-native-sdk.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{h,m,mm,swift,cpp}"
+  # ios/Interop/RNSetgreetInterop.m only exists for Swift Package Manager (a
+  # target needs one source file), so CocoaPods takes the header alone.
+  s.source_files = "ios/*.{h,m,mm,swift,cpp}", "ios/include/**/*.h", "ios/Interop/include/**/*.h"
   # The Objective-C++ module header imports the codegen spec (C++), so it must
-  # stay out of the umbrella header the Swift sources compile against.
-  s.private_header_files = "ios/**/*.h"
+  # stay out of the umbrella header the Swift sources compile against. The
+  # interop protocol is in it on purpose: that is how the Swift sources see it.
+  s.private_header_files = "ios/include/**/*.h"
+  s.public_header_files = "ios/Interop/include/**/*.h"
 
   s.swift_version = '5.0'
   s.ios.frameworks = 'UIKit'
