@@ -23,13 +23,19 @@ yarn add @setgreet/react-native-sdk
 
 ### 2. iOS Setup
 
-#### Install CocoaPods Dependencies
+The package ships the native Setgreet iOS SDK, so there is nothing to add for it in either dependency manager.
 
-The iOS SetgreetSDK is automatically included via CocoaPods when you install the React Native SDK:
+#### CocoaPods
+
+Autolinking installs the `RNSetgreet` pod, which carries the native SDK as a prebuilt framework:
 
 ```bash
 cd ios && pod install
 ```
+
+#### Swift Package Manager
+
+React Native's Swift Package Manager mode (`npx react-native spm`, experimental in React Native 0.87 and 0.88, see [RFC 0994](https://github.com/react-native-community/discussions-and-proposals/pull/994)) picks up the package's `Package.swift` automatically. It depends on the public [`setgreet-ios-sdk`](https://github.com/setgreet/setgreet-ios-sdk) package at the pinned version, so nothing is added by hand. The React Native team does not recommend that mode for production apps yet; CocoaPods stays the supported path until it does.
 
 ### 3. Android Setup
 
@@ -42,7 +48,7 @@ No additional setup required for Android.
 
 Lottie support is opt-in on iOS, so apps that don't use it stay smaller. Without it, a Lottie component in a flow renders nothing on iOS; the rest of the flow is unaffected. On Android the native SDK already includes Lottie.
 
-**iOS:** add the `RNSetgreet/Lottie` pod to your `ios/Podfile`. It brings in the `SetgreetSDKLottie` module and `lottie-ios`. `SetgreetSDKLottie` is a prebuilt dynamic framework that loads `@rpath/Lottie.framework`, built with library evolution, so build `lottie-ios` that way too (React Native builds pods as static libraries by default):
+**iOS with CocoaPods:** add the `RNSetgreet/Lottie` pod to your `ios/Podfile`. It brings in the `SetgreetSDKLottie` module and `lottie-ios`. `SetgreetSDKLottie` is a prebuilt dynamic framework that loads `@rpath/Lottie.framework`, built with library evolution, so build `lottie-ios` that way too (React Native builds pods as static libraries by default):
 
 ```ruby
 # Added for Setgreet Lottie. If your Podfile already has a pre_install block,
@@ -89,6 +95,13 @@ end
 
 Then run `cd ios && pod install`. If it stops with `There are multiple dependencies with different sources for RNSetgreet`, the `:path` differs from the one autolinking uses: compare it with the `RNSetgreet` entry under `EXTERNAL SOURCES` in `Podfile.lock`.
 
+**iOS with Swift Package Manager:** in Xcode, add two package products to your **app target** (File > Add Package Dependencies):
+
+1. `SetgreetSDKLottie` from `https://github.com/setgreet/setgreet-ios-sdk.git`, at the exact version this package's `Package.swift` pins.
+2. `Lottie` from `https://github.com/airbnb/lottie-spm.git` (4.6.0 or later).
+
+`SetgreetSDKLottie` cannot declare the Lottie dependency itself (binary targets cannot), so both go in. No Podfile changes apply in this mode. `registerLottie()` finds the framework at runtime.
+
 **Using `lottie-react-native` too?** Both libraries share the one `lottie-ios` pod. `SetgreetSDKLottie` requires `lottie-ios ~> 4.6`; `lottie-react-native` 7.3.6 and later pin `lottie-ios` 4.6.0, so they resolve together. Versions up to 7.3.5 pin 4.5.0 or older, and `pod install` cannot satisfy both: upgrade `lottie-react-native` first. The Podfile lines above still apply: they change how `lottie-ios` is built, for both libraries.
 
 **Register at startup**, once, before the first flow shows:
@@ -99,7 +112,7 @@ import { registerLottie } from '@setgreet/react-native-sdk';
 registerLottie(); // true when Lottie can render
 ```
 
-`registerLottie()` returns `false` on iOS when the `RNSetgreet/Lottie` pod is not installed. On Android it always returns `true`. It also returns `false` when the app's native build predates `registerLottie()`, for example after an over-the-air JavaScript update. The [example app](example) does both steps.
+`registerLottie()` returns `false` on iOS when Lottie support is not installed (the `RNSetgreet/Lottie` pod, or the `SetgreetSDKLottie` product under Swift Package Manager). On Android it always returns `true`. It also returns `false` when the app's native build predates `registerLottie()`, for example after an over-the-air JavaScript update. The [example app](example) does both steps.
 
 ## Usage
 
@@ -568,11 +581,11 @@ See [External Data](https://setgreet.com/docs/personalization/external-data) for
 
 #### "Duplicate symbol" errors
 
-This usually means you have both the old embedded framework and the new CocoaPods dependency. Make sure you've:
+This usually means the app links the native SDK twice: once through this package and once on its own. Make sure you've:
 
 1. Updated to the latest version of this package
-2. Removed any manual SetgreetSDK framework references
-3. Only use CocoaPods for SetgreetSDK dependency
+2. Removed any manual `SetgreetSDK` framework references and any `pod 'SetgreetSDK'` line from the Podfile (the pod is included in `RNSetgreet`)
+3. Under Swift Package Manager, added only the `SetgreetSDKLottie` product to the app target (see [Lottie animations](#4-lottie-animations-optional)), never `SetgreetSDK` itself
 
 #### CocoaPods Installation Issues
 
