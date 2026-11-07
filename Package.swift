@@ -31,7 +31,7 @@ import PackageDescription
 
 // Kept in step with the xcframeworks vendored in ios/Frameworks for CocoaPods
 // (both are updated by .github/workflows/update-native-sdk.yml).
-let setgreetSDKVersion: Version = "1.11.0"
+let setgreetSDKVersion: Version = "1.12.2"
 
 let package = Package(
     name: "RNSetgreet",
