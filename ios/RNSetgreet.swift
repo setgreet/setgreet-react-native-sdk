@@ -1,5 +1,5 @@
 import Foundation
-import SetgreetSDK
+@_spi(SetgreetInternal) import SetgreetSDK
 // The protocol RNSetgreet.mm talks to (ios/Interop). A module of its own under
 // Swift Package Manager; part of this module's headers under CocoaPods.
 #if canImport(RNSetgreetInterop)
@@ -57,6 +57,9 @@ public final class RNSetgreetImpl: NSObject, RNSetgreetPurchaseRequestSending, R
     let debug = (config?["debugMode"] as? Bool) ?? false
 
     DispatchQueue.main.async { [weak self] in
+      // Sent as X-Setgreet-Sdk-Flavor, so flows can branch on
+      // `setgreet:sdk_flavor`. Before initialize: the first request has it.
+      Setgreet.shared.setSdkFlavor("react-native")
       Setgreet.shared.initialize(
         appKey: appKey,
         config: .init(debugMode: debug)

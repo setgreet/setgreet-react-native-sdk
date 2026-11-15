@@ -1,5 +1,6 @@
 package com.setgreet.reactnative
 
+import android.annotation.SuppressLint
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
@@ -34,7 +35,13 @@ class RNSetgreetModule(reactContext: ReactApplicationContext) :
 
   /** The SDK calls, in order: see RNSetgreetSdkCalls. */
   private val sdkCalls = RNSetgreetSdkCalls(object : RNSetgreetNativeSdk {
+    // setSdkFlavor is restricted to the Setgreet library group (not public
+    // API); this module is Setgreet's own, in another Maven group.
+    @SuppressLint("RestrictedApi")
     override fun initialize(appKey: String, debugMode: Boolean) {
+      // Sent as X-Setgreet-Sdk-Flavor, so flows can branch on
+      // `setgreet:sdk_flavor`. Before initialize: the first request has it.
+      Setgreet.setSdkFlavor("react-native")
       Setgreet.initialize(reactApplicationContext, appKey, SetgreetConfig(debugMode = debugMode))
       setupFlowCallbacks()
     }
